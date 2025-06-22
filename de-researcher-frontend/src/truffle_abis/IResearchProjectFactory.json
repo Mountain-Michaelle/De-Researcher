@@ -40,7 +40,7 @@
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"projectAddr\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"_title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_description\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_reward\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"_contentHash\",\"type\":\"bytes32\"}],\"name\":\"updateProjectMilestones\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/src/contracts/ResearchProject.sol\":\"IResearchProjectFactory\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/src/contracts/ResearchProject.sol\":{\"keccak256\":\"0x97872e2d19d0e58a098e9b1be5e426dd243c08e328f0f3330eb83374adeef13a\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://3b49be4274477b65035cb21534dfe9a9e054b4f10e0daf7a3df99f7a76d34673\",\"dweb:/ipfs/QmeXncZpGXksUegNGMLAn9bXwmojHaTdXUE2Z83tusNPAX\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.0+commit.c7dfd78e\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"projectAddr\",\"type\":\"address\"},{\"internalType\":\"string\",\"name\":\"_title\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_description\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"_deadline\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_reward\",\"type\":\"uint256\"},{\"internalType\":\"bytes32\",\"name\":\"_contentHash\",\"type\":\"bytes32\"}],\"name\":\"updateProjectMilestones\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/src/contracts/ResearchProject.sol\":\"IResearchProjectFactory\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/src/contracts/ResearchProject.sol\":{\"keccak256\":\"0x04fba347954987ba581b07a04fd24054a950a74666543a059515ea15cd71c611\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://dd03502db3d24526504c89cf64ea0b6efe611033434ba19778a9210d342f0dc1\",\"dweb:/ipfs/QmZs2bN87LnFk8X5AyPFLgSYh9jhEjfhMfMyGuzkqj464Y\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -48,8 +48,8 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.0;\r\n\r\n\r\n interface IResearchProjectFactory {\r\n    function updateProjectMilestones(\r\n        address projectAddr,\r\n        string memory _title,\r\n        string memory _description,\r\n        uint256 _deadline,\r\n        uint256 _reward,\r\n        bytes32 _contentHash\r\n    ) external;\r\n}\r\n\r\ncontract ResearchProject {\r\n    \r\n    struct Milestone {\r\n        string title;\r\n        string description;\r\n        uint256 deadline;\r\n        uint256 reward;\r\n        bool isCompleted;\r\n        address completedBy;\r\n        uint256 timestamp;\r\n        bytes32 contentHash;\r\n    }\r\n    \r\n    string public title;\r\n    address public manager;\r\n    uint256 public totalFunding;\r\n    uint256 public numMilestones;\r\n    bool public isActive;\r\n    bytes32 public projectHash;\r\n    address public projectAddress;\r\n    mapping(uint256 => Milestone) public milestones;\r\n    address public factoryAddress;\r\n\r\n\r\n    event MilestoneCompleted(uint256 milestoneId, address completedBy, uint256 timestamp);\r\n    event FundsWithdrawn(uint256 milestoneId, address recipient, uint256 amount);\r\n    event MilestoneAdded(uint256 milestoneId, string description, uint256 deadline, uint256 reward, bytes32 contentHash);\r\n\r\n\r\n    modifier onlyManager() {\r\n        require(msg.sender == manager, \"Only project manager can perform this action\");\r\n        _;\r\n    }\r\n\r\n    modifier milestoneExists(uint256 milestoneId) {\r\n        require(bytes(milestones[milestoneId].description).length != 0, \"Milestone does not exist\");\r\n        _;\r\n    }\r\n\r\n    constructor(string memory _title, address _manager, uint256 _totalFunding, bytes32 _projectHash, address _projectAddress, address _factoryAddress) {\r\n        \r\n        title = _title;\r\n        manager = _manager;\r\n        totalFunding = _totalFunding;\r\n        projectHash = _projectHash;\r\n        projectAddress = _projectAddress;\r\n        isActive = true;\r\n        factoryAddress = _factoryAddress;\r\n    }\r\n\r\n    function addMilestone(string memory _title, string memory _description, uint256 _deadline, uint256 _reward, bytes32 _contentHash) public onlyManager {\r\n        require(bytes(_title).length > 0, \"Title cannot be empty\");\r\n        require(bytes(_description).length > 0, \"Description cannot be empty\");\r\n        require(_deadline > block.timestamp, \"Deadline must be in the future\");\r\n        require(_reward > 0, \"Reward must be greater than zero\");\r\n        milestones[numMilestones] = Milestone({\r\n            title: _title,\r\n            description: _description,\r\n            deadline: _deadline,\r\n            reward: _reward,\r\n            isCompleted: false,\r\n            completedBy: address(0),\r\n            timestamp: 0,\r\n            contentHash: _contentHash\r\n        });\r\n        // require(_reward > 200, \"Reward must be ------------greater than 200\");\r\n        emit MilestoneAdded(numMilestones, _description, _deadline, _reward, _contentHash);\r\n        // require(_reward > 200, \"Reward must be greater than 200\");\r\n        // require(factoryAddress != address(0), \"Factory address cannot be zero\");\r\n        //  // Notify the factory\r\n        // IResearchProjectFactory factory = IResearchProjectFactory(factoryAddress);\r\n        // factory.updateProjectMilestones(projectAddress, _title, _description, _deadline, _reward, _contentHash);\r\n        numMilestones++;\r\n    }\r\n\r\n    function getAllMilestones() public view returns (Milestone[] memory) {\r\n        Milestone[] memory allMilestones = new Milestone[](numMilestones);\r\n\r\n        for (uint256 i = 0; i < numMilestones; i++) {\r\n            allMilestones[i] = milestones[i];\r\n        }\r\n        \r\n        return allMilestones;\r\n    }\r\n\r\n    function completeMilestone(uint256 milestoneId, bytes32 _contentHash) public milestoneExists(milestoneId) {\r\n        Milestone storage milestone = milestones[milestoneId];\r\n\r\n        require(block.timestamp <= milestone.deadline, \"Milestone deadline has passed\");\r\n        require(!milestone.isCompleted, \"Milestone already completed\");\r\n        require(milestone.contentHash == _contentHash, \"Content hash does not match\");\r\n\r\n        milestone.isCompleted = true;\r\n        milestone.completedBy = msg.sender;\r\n        milestone.timestamp = block.timestamp;\r\n\r\n        emit MilestoneCompleted(milestoneId, msg.sender, block.timestamp);\r\n\r\n        // Transfer reward to the researcher who completed the milestone\r\n        (bool success, ) = msg.sender.call{value: milestone.reward}(\"\");\r\n        require(success, \"Transfer failed\");\r\n\r\n        emit FundsWithdrawn(milestoneId, msg.sender, milestone.reward);\r\n    }\r\n\r\n    // Function to fund the project\r\n    function fundProject() public payable {\r\n        totalFunding += msg.value;\r\n    }\r\n\r\n    // Fallback function to receive Ether\r\n    receive() external payable {}\r\n}\r\n",
-  "sourcePath": "C:\\Users\\Chinedu\\Web Work\\de-researcher\\de-researcher-frontend\\src\\contracts\\ResearchProject.sol",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\n\n interface IResearchProjectFactory {\n    function updateProjectMilestones(\n        address projectAddr,\n        string memory _title,\n        string memory _description,\n        uint256 _deadline,\n        uint256 _reward,\n        bytes32 _contentHash\n    ) external;\n}\n\ncontract ResearchProject {\n    \n    struct Milestone {\n        string title;\n        string description;\n        uint256 deadline;\n        uint256 reward;\n        bool isCompleted;\n        address completedBy;\n        uint256 timestamp;\n        bytes32 contentHash;\n    }\n    \n    string public title;\n    address public manager;\n    uint256 public totalFunding;\n    uint256 public numMilestones;\n    bool public isActive;\n    bytes32 public projectHash;\n    address public projectAddress;\n    mapping(uint256 => Milestone) public milestones;\n    address public factoryAddress;\n\n\n    event MilestoneCompleted(uint256 milestoneId, address completedBy, uint256 timestamp);\n    event FundsWithdrawn(uint256 milestoneId, address recipient, uint256 amount);\n    event MilestoneAdded(uint256 milestoneId, string description, uint256 deadline, uint256 reward, bytes32 contentHash);\n\n\n    modifier onlyManager() {\n        require(msg.sender == manager, \"Only project manager can perform this action\");\n        _;\n    }\n\n    modifier milestoneExists(uint256 milestoneId) {\n        require(bytes(milestones[milestoneId].description).length != 0, \"Milestone does not exist\");\n        _;\n    }\n\n    constructor(string memory _title, address _manager, uint256 _totalFunding, bytes32 _projectHash, address _projectAddress, address _factoryAddress) {\n        \n        title = _title;\n        manager = _manager;\n        totalFunding = _totalFunding;\n        projectHash = _projectHash;\n        projectAddress = _projectAddress;\n        isActive = true;\n        factoryAddress = _factoryAddress;\n    }\n\n    function addMilestone(string memory _title, string memory _description, uint256 _deadline, uint256 _reward, bytes32 _contentHash) public onlyManager {\n        require(bytes(_title).length > 0, \"Title cannot be empty\");\n        require(bytes(_description).length > 0, \"Description cannot be empty\");\n        require(_deadline > block.timestamp, \"Deadline must be in the future\");\n        require(_reward > 0, \"Reward must be greater than zero\");\n        milestones[numMilestones] = Milestone({\n            title: _title,\n            description: _description,\n            deadline: _deadline,\n            reward: _reward,\n            isCompleted: false,\n            completedBy: address(0),\n            timestamp: 0,\n            contentHash: _contentHash\n        });\n        // require(_reward > 200, \"Reward must be ------------greater than 200\");\n        emit MilestoneAdded(numMilestones, _description, _deadline, _reward, _contentHash);\n        // require(_reward > 200, \"Reward must be greater than 200\");\n        // require(factoryAddress != address(0), \"Factory address cannot be zero\");\n        //  // Notify the factory\n        // IResearchProjectFactory factory = IResearchProjectFactory(factoryAddress);\n        // factory.updateProjectMilestones(projectAddress, _title, _description, _deadline, _reward, _contentHash);\n        numMilestones++;\n    }\n\n    function getAllMilestones() public view returns (Milestone[] memory) {\n        Milestone[] memory allMilestones = new Milestone[](numMilestones);\n\n        for (uint256 i = 0; i < numMilestones; i++) {\n            allMilestones[i] = milestones[i];\n        }\n        \n        return allMilestones;\n    }\n\n    function completeMilestone(uint256 milestoneId, bytes32 _contentHash) public milestoneExists(milestoneId) {\n        Milestone storage milestone = milestones[milestoneId];\n\n        require(block.timestamp <= milestone.deadline, \"Milestone deadline has passed\");\n        require(!milestone.isCompleted, \"Milestone already completed\");\n        require(milestone.contentHash == _contentHash, \"Content hash does not match\");\n\n        milestone.isCompleted = true;\n        milestone.completedBy = msg.sender;\n        milestone.timestamp = block.timestamp;\n\n        emit MilestoneCompleted(milestoneId, msg.sender, block.timestamp);\n\n        // Transfer reward to the researcher who completed the milestone\n        (bool success, ) = msg.sender.call{value: milestone.reward}(\"\");\n        require(success, \"Transfer failed\");\n\n        emit FundsWithdrawn(milestoneId, msg.sender, milestone.reward);\n    }\n\n    // Function to fund the project\n    function fundProject() public payable {\n        totalFunding += msg.value;\n    }\n\n    // Fallback function to receive Ether\n    receive() external payable {}\n}\n",
+  "sourcePath": "C:\\Users\\Chinedu\\Web Work\\Blockchain\\de-researcher\\de-researcher-frontend\\src\\contracts\\ResearchProject.sol",
   "ast": {
     "absolutePath": "project:/src/contracts/ResearchProject.sol",
     "exportedSymbols": {
@@ -73,7 +73,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:23:1"
+        "src": "32:23:1"
       },
       {
         "abstract": false,
@@ -107,7 +107,7 @@
                   "name": "projectAddr",
                   "nodeType": "VariableDeclaration",
                   "scope": 76,
-                  "src": "147:19:1",
+                  "src": "141:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -118,7 +118,7 @@
                     "id": 62,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "147:7:1",
+                    "src": "141:7:1",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -134,7 +134,7 @@
                   "name": "_title",
                   "nodeType": "VariableDeclaration",
                   "scope": 76,
-                  "src": "177:20:1",
+                  "src": "170:20:1",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -145,7 +145,7 @@
                     "id": 64,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "177:6:1",
+                    "src": "170:6:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -160,7 +160,7 @@
                   "name": "_description",
                   "nodeType": "VariableDeclaration",
                   "scope": 76,
-                  "src": "208:26:1",
+                  "src": "200:26:1",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -171,7 +171,7 @@
                     "id": 66,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "208:6:1",
+                    "src": "200:6:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -186,7 +186,7 @@
                   "name": "_deadline",
                   "nodeType": "VariableDeclaration",
                   "scope": 76,
-                  "src": "245:17:1",
+                  "src": "236:17:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -197,7 +197,7 @@
                     "id": 68,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "245:7:1",
+                    "src": "236:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -212,7 +212,7 @@
                   "name": "_reward",
                   "nodeType": "VariableDeclaration",
                   "scope": 76,
-                  "src": "273:15:1",
+                  "src": "263:15:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -223,7 +223,7 @@
                     "id": 70,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "273:7:1",
+                    "src": "263:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -238,7 +238,7 @@
                   "name": "_contentHash",
                   "nodeType": "VariableDeclaration",
                   "scope": 76,
-                  "src": "299:20:1",
+                  "src": "288:20:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -249,7 +249,7 @@
                     "id": 72,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "299:7:1",
+                    "src": "288:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -258,23 +258,23 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "136:190:1"
+              "src": "131:183:1"
             },
             "returnParameters": {
               "id": 75,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "335:0:1"
+              "src": "323:0:1"
             },
             "scope": 77,
-            "src": "104:232:1",
+            "src": "99:225:1",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
         "scope": 452,
-        "src": "63:276:1"
+        "src": "59:267:1"
       },
       {
         "abstract": false,
@@ -300,7 +300,7 @@
                 "name": "title",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "409:12:1",
+                "src": "391:12:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -311,7 +311,7 @@
                   "id": 78,
                   "name": "string",
                   "nodeType": "ElementaryTypeName",
-                  "src": "409:6:1",
+                  "src": "391:6:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_string_storage_ptr",
                     "typeString": "string"
@@ -326,7 +326,7 @@
                 "name": "description",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "432:18:1",
+                "src": "413:18:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -337,7 +337,7 @@
                   "id": 80,
                   "name": "string",
                   "nodeType": "ElementaryTypeName",
-                  "src": "432:6:1",
+                  "src": "413:6:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_string_storage_ptr",
                     "typeString": "string"
@@ -352,7 +352,7 @@
                 "name": "deadline",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "461:16:1",
+                "src": "441:16:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -363,7 +363,7 @@
                   "id": 82,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "461:7:1",
+                  "src": "441:7:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -378,7 +378,7 @@
                 "name": "reward",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "488:14:1",
+                "src": "467:14:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -389,7 +389,7 @@
                   "id": 84,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "488:7:1",
+                  "src": "467:7:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -404,7 +404,7 @@
                 "name": "isCompleted",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "513:16:1",
+                "src": "491:16:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -415,7 +415,7 @@
                   "id": 86,
                   "name": "bool",
                   "nodeType": "ElementaryTypeName",
-                  "src": "513:4:1",
+                  "src": "491:4:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_bool",
                     "typeString": "bool"
@@ -430,7 +430,7 @@
                 "name": "completedBy",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "540:19:1",
+                "src": "517:19:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -441,7 +441,7 @@
                   "id": 88,
                   "name": "address",
                   "nodeType": "ElementaryTypeName",
-                  "src": "540:7:1",
+                  "src": "517:7:1",
                   "stateMutability": "nonpayable",
                   "typeDescriptions": {
                     "typeIdentifier": "t_address",
@@ -457,7 +457,7 @@
                 "name": "timestamp",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "570:17:1",
+                "src": "546:17:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -468,7 +468,7 @@
                   "id": 90,
                   "name": "uint256",
                   "nodeType": "ElementaryTypeName",
-                  "src": "570:7:1",
+                  "src": "546:7:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_uint256",
                     "typeString": "uint256"
@@ -483,7 +483,7 @@
                 "name": "contentHash",
                 "nodeType": "VariableDeclaration",
                 "scope": 94,
-                "src": "598:19:1",
+                "src": "573:19:1",
                 "stateVariable": false,
                 "storageLocation": "default",
                 "typeDescriptions": {
@@ -494,7 +494,7 @@
                   "id": 92,
                   "name": "bytes32",
                   "nodeType": "ElementaryTypeName",
-                  "src": "598:7:1",
+                  "src": "573:7:1",
                   "typeDescriptions": {
                     "typeIdentifier": "t_bytes32",
                     "typeString": "bytes32"
@@ -506,7 +506,7 @@
             "name": "Milestone",
             "nodeType": "StructDefinition",
             "scope": 451,
-            "src": "381:244:1",
+            "src": "364:235:1",
             "visibility": "public"
           },
           {
@@ -517,7 +517,7 @@
             "name": "title",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "637:19:1",
+            "src": "609:19:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -528,7 +528,7 @@
               "id": 95,
               "name": "string",
               "nodeType": "ElementaryTypeName",
-              "src": "637:6:1",
+              "src": "609:6:1",
               "typeDescriptions": {
                 "typeIdentifier": "t_string_storage_ptr",
                 "typeString": "string"
@@ -544,7 +544,7 @@
             "name": "manager",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "663:22:1",
+            "src": "634:22:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -555,7 +555,7 @@
               "id": 97,
               "name": "address",
               "nodeType": "ElementaryTypeName",
-              "src": "663:7:1",
+              "src": "634:7:1",
               "stateMutability": "nonpayable",
               "typeDescriptions": {
                 "typeIdentifier": "t_address",
@@ -572,7 +572,7 @@
             "name": "totalFunding",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "692:27:1",
+            "src": "662:27:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -583,7 +583,7 @@
               "id": 99,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "692:7:1",
+              "src": "662:7:1",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -599,7 +599,7 @@
             "name": "numMilestones",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "726:28:1",
+            "src": "695:28:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -610,7 +610,7 @@
               "id": 101,
               "name": "uint256",
               "nodeType": "ElementaryTypeName",
-              "src": "726:7:1",
+              "src": "695:7:1",
               "typeDescriptions": {
                 "typeIdentifier": "t_uint256",
                 "typeString": "uint256"
@@ -626,7 +626,7 @@
             "name": "isActive",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "761:20:1",
+            "src": "729:20:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -637,7 +637,7 @@
               "id": 103,
               "name": "bool",
               "nodeType": "ElementaryTypeName",
-              "src": "761:4:1",
+              "src": "729:4:1",
               "typeDescriptions": {
                 "typeIdentifier": "t_bool",
                 "typeString": "bool"
@@ -653,7 +653,7 @@
             "name": "projectHash",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "788:26:1",
+            "src": "755:26:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -664,7 +664,7 @@
               "id": 105,
               "name": "bytes32",
               "nodeType": "ElementaryTypeName",
-              "src": "788:7:1",
+              "src": "755:7:1",
               "typeDescriptions": {
                 "typeIdentifier": "t_bytes32",
                 "typeString": "bytes32"
@@ -680,7 +680,7 @@
             "name": "projectAddress",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "821:29:1",
+            "src": "787:29:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -691,7 +691,7 @@
               "id": 107,
               "name": "address",
               "nodeType": "ElementaryTypeName",
-              "src": "821:7:1",
+              "src": "787:7:1",
               "stateMutability": "nonpayable",
               "typeDescriptions": {
                 "typeIdentifier": "t_address",
@@ -708,7 +708,7 @@
             "name": "milestones",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "857:47:1",
+            "src": "822:47:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -721,14 +721,14 @@
                 "id": 109,
                 "name": "uint256",
                 "nodeType": "ElementaryTypeName",
-                "src": "865:7:1",
+                "src": "830:7:1",
                 "typeDescriptions": {
                   "typeIdentifier": "t_uint256",
                   "typeString": "uint256"
                 }
               },
               "nodeType": "Mapping",
-              "src": "857:29:1",
+              "src": "822:29:1",
               "typeDescriptions": {
                 "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Milestone_$94_storage_$",
                 "typeString": "mapping(uint256 => struct ResearchProject.Milestone)"
@@ -741,10 +741,10 @@
                   "name": "Milestone",
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 94,
-                  "src": "876:9:1"
+                  "src": "841:9:1"
                 },
                 "referencedDeclaration": 94,
-                "src": "876:9:1",
+                "src": "841:9:1",
                 "typeDescriptions": {
                   "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                   "typeString": "struct ResearchProject.Milestone"
@@ -761,7 +761,7 @@
             "name": "factoryAddress",
             "nodeType": "VariableDeclaration",
             "scope": 451,
-            "src": "911:29:1",
+            "src": "875:29:1",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -772,7 +772,7 @@
               "id": 114,
               "name": "address",
               "nodeType": "ElementaryTypeName",
-              "src": "911:7:1",
+              "src": "875:7:1",
               "stateMutability": "nonpayable",
               "typeDescriptions": {
                 "typeIdentifier": "t_address",
@@ -798,7 +798,7 @@
                   "name": "milestoneId",
                   "nodeType": "VariableDeclaration",
                   "scope": 123,
-                  "src": "976:19:1",
+                  "src": "937:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -809,7 +809,7 @@
                     "id": 116,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "976:7:1",
+                    "src": "937:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -825,7 +825,7 @@
                   "name": "completedBy",
                   "nodeType": "VariableDeclaration",
                   "scope": 123,
-                  "src": "997:19:1",
+                  "src": "958:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -836,7 +836,7 @@
                     "id": 118,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "997:7:1",
+                    "src": "958:7:1",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -853,7 +853,7 @@
                   "name": "timestamp",
                   "nodeType": "VariableDeclaration",
                   "scope": 123,
-                  "src": "1018:17:1",
+                  "src": "979:17:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -864,7 +864,7 @@
                     "id": 120,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1018:7:1",
+                    "src": "979:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -873,9 +873,9 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "975:61:1"
+              "src": "936:61:1"
             },
-            "src": "951:86:1"
+            "src": "912:86:1"
           },
           {
             "anonymous": false,
@@ -894,7 +894,7 @@
                   "name": "milestoneId",
                   "nodeType": "VariableDeclaration",
                   "scope": 131,
-                  "src": "1064:19:1",
+                  "src": "1024:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -905,7 +905,7 @@
                     "id": 124,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1064:7:1",
+                    "src": "1024:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -921,7 +921,7 @@
                   "name": "recipient",
                   "nodeType": "VariableDeclaration",
                   "scope": 131,
-                  "src": "1085:17:1",
+                  "src": "1045:17:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -932,7 +932,7 @@
                     "id": 126,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1085:7:1",
+                    "src": "1045:7:1",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -949,7 +949,7 @@
                   "name": "amount",
                   "nodeType": "VariableDeclaration",
                   "scope": 131,
-                  "src": "1104:14:1",
+                  "src": "1064:14:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -960,7 +960,7 @@
                     "id": 128,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1104:7:1",
+                    "src": "1064:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -969,9 +969,9 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1063:56:1"
+              "src": "1023:56:1"
             },
-            "src": "1043:77:1"
+            "src": "1003:77:1"
           },
           {
             "anonymous": false,
@@ -990,7 +990,7 @@
                   "name": "milestoneId",
                   "nodeType": "VariableDeclaration",
                   "scope": 143,
-                  "src": "1147:19:1",
+                  "src": "1106:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1001,7 +1001,7 @@
                     "id": 132,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1147:7:1",
+                    "src": "1106:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1017,7 +1017,7 @@
                   "name": "description",
                   "nodeType": "VariableDeclaration",
                   "scope": 143,
-                  "src": "1168:18:1",
+                  "src": "1127:18:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1028,7 +1028,7 @@
                     "id": 134,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1168:6:1",
+                    "src": "1127:6:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1044,7 +1044,7 @@
                   "name": "deadline",
                   "nodeType": "VariableDeclaration",
                   "scope": 143,
-                  "src": "1188:16:1",
+                  "src": "1147:16:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1055,7 +1055,7 @@
                     "id": 136,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1188:7:1",
+                    "src": "1147:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1071,7 +1071,7 @@
                   "name": "reward",
                   "nodeType": "VariableDeclaration",
                   "scope": 143,
-                  "src": "1206:14:1",
+                  "src": "1165:14:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1082,7 +1082,7 @@
                     "id": 138,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1206:7:1",
+                    "src": "1165:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1098,7 +1098,7 @@
                   "name": "contentHash",
                   "nodeType": "VariableDeclaration",
                   "scope": 143,
-                  "src": "1222:19:1",
+                  "src": "1181:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1109,7 +1109,7 @@
                     "id": 140,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1222:7:1",
+                    "src": "1181:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1118,15 +1118,15 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1146:96:1"
+              "src": "1105:96:1"
             },
-            "src": "1126:117:1"
+            "src": "1085:117:1"
           },
           {
             "body": {
               "id": 154,
               "nodeType": "Block",
-              "src": "1276:109:1",
+              "src": "1232:106:1",
               "statements": [
                 {
                   "expression": {
@@ -1148,7 +1148,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 4294967281,
-                            "src": "1295:3:1",
+                            "src": "1250:3:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
@@ -1161,7 +1161,7 @@
                           "lValueRequested": false,
                           "memberName": "sender",
                           "nodeType": "MemberAccess",
-                          "src": "1295:10:1",
+                          "src": "1250:10:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
                             "typeString": "address"
@@ -1175,13 +1175,13 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 98,
-                          "src": "1309:7:1",
+                          "src": "1264:7:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
                             "typeString": "address"
                           }
                         },
-                        "src": "1295:21:1",
+                        "src": "1250:21:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -1196,7 +1196,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "1318:46:1",
+                        "src": "1273:46:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_0bffa629cc75cb594c6150bee9e2417906df07e40ba61a7a3f9ab9b86a33c767",
                           "typeString": "literal_string \"Only project manager can perform this action\""
@@ -1223,7 +1223,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "1287:7:1",
+                      "src": "1242:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -1237,7 +1237,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "1287:78:1",
+                    "src": "1242:78:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -1246,12 +1246,12 @@
                   },
                   "id": 152,
                   "nodeType": "ExpressionStatement",
-                  "src": "1287:78:1"
+                  "src": "1242:78:1"
                 },
                 {
                   "id": 153,
                   "nodeType": "PlaceholderStatement",
-                  "src": "1376:1:1"
+                  "src": "1330:1:1"
                 }
               ]
             },
@@ -1262,9 +1262,9 @@
               "id": 144,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1273:2:1"
+              "src": "1229:2:1"
             },
-            "src": "1253:132:1",
+            "src": "1209:129:1",
             "virtual": false,
             "visibility": "internal"
           },
@@ -1272,7 +1272,7 @@
             "body": {
               "id": 174,
               "nodeType": "Block",
-              "src": "1439:122:1",
+              "src": "1390:119:1",
               "statements": [
                 {
                   "expression": {
@@ -1298,7 +1298,7 @@
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
                                     "referencedDeclaration": 113,
-                                    "src": "1464:10:1",
+                                    "src": "1414:10:1",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Milestone_$94_storage_$",
                                       "typeString": "mapping(uint256 => struct ResearchProject.Milestone storage ref)"
@@ -1311,7 +1311,7 @@
                                     "nodeType": "Identifier",
                                     "overloadedDeclarations": [],
                                     "referencedDeclaration": 157,
-                                    "src": "1475:11:1",
+                                    "src": "1425:11:1",
                                     "typeDescriptions": {
                                       "typeIdentifier": "t_uint256",
                                       "typeString": "uint256"
@@ -1322,7 +1322,7 @@
                                   "isPure": false,
                                   "lValueRequested": false,
                                   "nodeType": "IndexAccess",
-                                  "src": "1464:23:1",
+                                  "src": "1414:23:1",
                                   "typeDescriptions": {
                                     "typeIdentifier": "t_struct$_Milestone_$94_storage",
                                     "typeString": "struct ResearchProject.Milestone storage ref"
@@ -1336,7 +1336,7 @@
                                 "memberName": "description",
                                 "nodeType": "MemberAccess",
                                 "referencedDeclaration": 81,
-                                "src": "1464:35:1",
+                                "src": "1414:35:1",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_string_storage",
                                   "typeString": "string storage ref"
@@ -1356,7 +1356,7 @@
                               "isPure": true,
                               "lValueRequested": false,
                               "nodeType": "ElementaryTypeNameExpression",
-                              "src": "1458:5:1",
+                              "src": "1408:5:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_type$_t_bytes_storage_ptr_$",
                                 "typeString": "type(bytes storage pointer)"
@@ -1365,7 +1365,7 @@
                                 "id": 160,
                                 "name": "bytes",
                                 "nodeType": "ElementaryTypeName",
-                                "src": "1458:5:1",
+                                "src": "1408:5:1",
                                 "typeDescriptions": {}
                               }
                             },
@@ -1377,7 +1377,7 @@
                             "lValueRequested": false,
                             "names": [],
                             "nodeType": "FunctionCall",
-                            "src": "1458:42:1",
+                            "src": "1408:42:1",
                             "tryCall": false,
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes_storage_ptr",
@@ -1391,7 +1391,7 @@
                           "lValueRequested": false,
                           "memberName": "length",
                           "nodeType": "MemberAccess",
-                          "src": "1458:49:1",
+                          "src": "1408:49:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -1408,14 +1408,14 @@
                           "kind": "number",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "1511:1:1",
+                          "src": "1461:1:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_rational_0_by_1",
                             "typeString": "int_const 0"
                           },
                           "value": "0"
                         },
-                        "src": "1458:54:1",
+                        "src": "1408:54:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -1430,7 +1430,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "1514:26:1",
+                        "src": "1464:26:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_3d20084ffe48fb442cce8299807d4f308852fe5719e13418badc66a1ea52bdcd",
                           "typeString": "literal_string \"Milestone does not exist\""
@@ -1457,7 +1457,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "1450:7:1",
+                      "src": "1400:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -1471,7 +1471,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "1450:91:1",
+                    "src": "1400:91:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -1480,12 +1480,12 @@
                   },
                   "id": 172,
                   "nodeType": "ExpressionStatement",
-                  "src": "1450:91:1"
+                  "src": "1400:91:1"
                 },
                 {
                   "id": 173,
                   "nodeType": "PlaceholderStatement",
-                  "src": "1552:1:1"
+                  "src": "1501:1:1"
                 }
               ]
             },
@@ -1503,7 +1503,7 @@
                   "name": "milestoneId",
                   "nodeType": "VariableDeclaration",
                   "scope": 175,
-                  "src": "1418:19:1",
+                  "src": "1369:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1514,7 +1514,7 @@
                     "id": 156,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1418:7:1",
+                    "src": "1369:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1523,9 +1523,9 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1417:21:1"
+              "src": "1368:21:1"
             },
-            "src": "1393:168:1",
+            "src": "1344:165:1",
             "virtual": false,
             "visibility": "internal"
           },
@@ -1533,7 +1533,7 @@
             "body": {
               "id": 218,
               "nodeType": "Block",
-              "src": "1716:260:1",
+              "src": "1662:251:1",
               "statements": [
                 {
                   "expression": {
@@ -1548,7 +1548,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 96,
-                      "src": "1737:5:1",
+                      "src": "1681:5:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_string_storage",
                         "typeString": "string storage ref"
@@ -1562,13 +1562,13 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 177,
-                      "src": "1745:6:1",
+                      "src": "1689:6:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_string_memory_ptr",
                         "typeString": "string memory"
                       }
                     },
-                    "src": "1737:14:1",
+                    "src": "1681:14:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage",
                       "typeString": "string storage ref"
@@ -1576,7 +1576,7 @@
                   },
                   "id": 193,
                   "nodeType": "ExpressionStatement",
-                  "src": "1737:14:1"
+                  "src": "1681:14:1"
                 },
                 {
                   "expression": {
@@ -1591,7 +1591,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 98,
-                      "src": "1762:7:1",
+                      "src": "1705:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -1605,13 +1605,13 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 179,
-                      "src": "1772:8:1",
+                      "src": "1715:8:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "1762:18:1",
+                    "src": "1705:18:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -1619,7 +1619,7 @@
                   },
                   "id": 197,
                   "nodeType": "ExpressionStatement",
-                  "src": "1762:18:1"
+                  "src": "1705:18:1"
                 },
                 {
                   "expression": {
@@ -1634,7 +1634,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 100,
-                      "src": "1791:12:1",
+                      "src": "1733:12:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -1648,13 +1648,13 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 181,
-                      "src": "1806:13:1",
+                      "src": "1748:13:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "1791:28:1",
+                    "src": "1733:28:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1662,7 +1662,7 @@
                   },
                   "id": 201,
                   "nodeType": "ExpressionStatement",
-                  "src": "1791:28:1"
+                  "src": "1733:28:1"
                 },
                 {
                   "expression": {
@@ -1677,7 +1677,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 106,
-                      "src": "1830:11:1",
+                      "src": "1771:11:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
@@ -1691,13 +1691,13 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 183,
-                      "src": "1844:12:1",
+                      "src": "1785:12:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bytes32",
                         "typeString": "bytes32"
                       }
                     },
-                    "src": "1830:26:1",
+                    "src": "1771:26:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1705,7 +1705,7 @@
                   },
                   "id": 205,
                   "nodeType": "ExpressionStatement",
-                  "src": "1830:26:1"
+                  "src": "1771:26:1"
                 },
                 {
                   "expression": {
@@ -1720,7 +1720,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 108,
-                      "src": "1867:14:1",
+                      "src": "1807:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -1734,13 +1734,13 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 185,
-                      "src": "1884:15:1",
+                      "src": "1824:15:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "1867:32:1",
+                    "src": "1807:32:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -1748,7 +1748,7 @@
                   },
                   "id": 209,
                   "nodeType": "ExpressionStatement",
-                  "src": "1867:32:1"
+                  "src": "1807:32:1"
                 },
                 {
                   "expression": {
@@ -1763,7 +1763,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 104,
-                      "src": "1910:8:1",
+                      "src": "1849:8:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -1780,14 +1780,14 @@
                       "kind": "bool",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "1921:4:1",
+                      "src": "1860:4:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       },
                       "value": "true"
                     },
-                    "src": "1910:15:1",
+                    "src": "1849:15:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1795,7 +1795,7 @@
                   },
                   "id": 213,
                   "nodeType": "ExpressionStatement",
-                  "src": "1910:15:1"
+                  "src": "1849:15:1"
                 },
                 {
                   "expression": {
@@ -1810,7 +1810,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 115,
-                      "src": "1936:14:1",
+                      "src": "1874:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -1824,13 +1824,13 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 187,
-                      "src": "1953:15:1",
+                      "src": "1891:15:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "1936:32:1",
+                    "src": "1874:32:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -1838,7 +1838,7 @@
                   },
                   "id": 217,
                   "nodeType": "ExpressionStatement",
-                  "src": "1936:32:1"
+                  "src": "1874:32:1"
                 }
               ]
             },
@@ -1859,7 +1859,7 @@
                   "name": "_title",
                   "nodeType": "VariableDeclaration",
                   "scope": 219,
-                  "src": "1581:20:1",
+                  "src": "1527:20:1",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -1870,7 +1870,7 @@
                     "id": 176,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1581:6:1",
+                    "src": "1527:6:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -1885,7 +1885,7 @@
                   "name": "_manager",
                   "nodeType": "VariableDeclaration",
                   "scope": 219,
-                  "src": "1603:16:1",
+                  "src": "1549:16:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1896,7 +1896,7 @@
                     "id": 178,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1603:7:1",
+                    "src": "1549:7:1",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1912,7 +1912,7 @@
                   "name": "_totalFunding",
                   "nodeType": "VariableDeclaration",
                   "scope": 219,
-                  "src": "1621:21:1",
+                  "src": "1567:21:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1923,7 +1923,7 @@
                     "id": 180,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1621:7:1",
+                    "src": "1567:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -1938,7 +1938,7 @@
                   "name": "_projectHash",
                   "nodeType": "VariableDeclaration",
                   "scope": 219,
-                  "src": "1644:20:1",
+                  "src": "1590:20:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1949,7 +1949,7 @@
                     "id": 182,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1644:7:1",
+                    "src": "1590:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1964,7 +1964,7 @@
                   "name": "_projectAddress",
                   "nodeType": "VariableDeclaration",
                   "scope": 219,
-                  "src": "1666:23:1",
+                  "src": "1612:23:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1975,7 +1975,7 @@
                     "id": 184,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1666:7:1",
+                    "src": "1612:7:1",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -1991,7 +1991,7 @@
                   "name": "_factoryAddress",
                   "nodeType": "VariableDeclaration",
                   "scope": 219,
-                  "src": "1691:23:1",
+                  "src": "1637:23:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -2002,7 +2002,7 @@
                     "id": 186,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1691:7:1",
+                    "src": "1637:7:1",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -2012,16 +2012,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1580:135:1"
+              "src": "1526:135:1"
             },
             "returnParameters": {
               "id": 189,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1716:0:1"
+              "src": "1662:0:1"
             },
             "scope": 451,
-            "src": "1569:407:1",
+            "src": "1515:398:1",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
@@ -2030,7 +2030,7 @@
             "body": {
               "id": 300,
               "nodeType": "Block",
-              "src": "2133:1234:1",
+              "src": "2068:1211:1",
               "statements": [
                 {
                   "expression": {
@@ -2054,7 +2054,7 @@
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
                                 "referencedDeclaration": 221,
-                                "src": "2158:6:1",
+                                "src": "2092:6:1",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_string_memory_ptr",
                                   "typeString": "string memory"
@@ -2074,7 +2074,7 @@
                               "isPure": true,
                               "lValueRequested": false,
                               "nodeType": "ElementaryTypeNameExpression",
-                              "src": "2152:5:1",
+                              "src": "2086:5:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_type$_t_bytes_storage_ptr_$",
                                 "typeString": "type(bytes storage pointer)"
@@ -2083,7 +2083,7 @@
                                 "id": 235,
                                 "name": "bytes",
                                 "nodeType": "ElementaryTypeName",
-                                "src": "2152:5:1",
+                                "src": "2086:5:1",
                                 "typeDescriptions": {}
                               }
                             },
@@ -2095,7 +2095,7 @@
                             "lValueRequested": false,
                             "names": [],
                             "nodeType": "FunctionCall",
-                            "src": "2152:13:1",
+                            "src": "2086:13:1",
                             "tryCall": false,
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes_memory_ptr",
@@ -2109,7 +2109,7 @@
                           "lValueRequested": false,
                           "memberName": "length",
                           "nodeType": "MemberAccess",
-                          "src": "2152:20:1",
+                          "src": "2086:20:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2126,14 +2126,14 @@
                           "kind": "number",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "2175:1:1",
+                          "src": "2109:1:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_rational_0_by_1",
                             "typeString": "int_const 0"
                           },
                           "value": "0"
                         },
-                        "src": "2152:24:1",
+                        "src": "2086:24:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -2148,7 +2148,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "2178:23:1",
+                        "src": "2112:23:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_698ca3c7081ed8237247ee65908074972d8604d6a2052a29e97091f6cc36ebf4",
                           "typeString": "literal_string \"Title cannot be empty\""
@@ -2175,7 +2175,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "2144:7:1",
+                      "src": "2078:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -2189,7 +2189,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "2144:58:1",
+                    "src": "2078:58:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -2198,7 +2198,7 @@
                   },
                   "id": 244,
                   "nodeType": "ExpressionStatement",
-                  "src": "2144:58:1"
+                  "src": "2078:58:1"
                 },
                 {
                   "expression": {
@@ -2222,7 +2222,7 @@
                                 "nodeType": "Identifier",
                                 "overloadedDeclarations": [],
                                 "referencedDeclaration": 223,
-                                "src": "2227:12:1",
+                                "src": "2160:12:1",
                                 "typeDescriptions": {
                                   "typeIdentifier": "t_string_memory_ptr",
                                   "typeString": "string memory"
@@ -2242,7 +2242,7 @@
                               "isPure": true,
                               "lValueRequested": false,
                               "nodeType": "ElementaryTypeNameExpression",
-                              "src": "2221:5:1",
+                              "src": "2154:5:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_type$_t_bytes_storage_ptr_$",
                                 "typeString": "type(bytes storage pointer)"
@@ -2251,7 +2251,7 @@
                                 "id": 246,
                                 "name": "bytes",
                                 "nodeType": "ElementaryTypeName",
-                                "src": "2221:5:1",
+                                "src": "2154:5:1",
                                 "typeDescriptions": {}
                               }
                             },
@@ -2263,7 +2263,7 @@
                             "lValueRequested": false,
                             "names": [],
                             "nodeType": "FunctionCall",
-                            "src": "2221:19:1",
+                            "src": "2154:19:1",
                             "tryCall": false,
                             "typeDescriptions": {
                               "typeIdentifier": "t_bytes_memory_ptr",
@@ -2277,7 +2277,7 @@
                           "lValueRequested": false,
                           "memberName": "length",
                           "nodeType": "MemberAccess",
-                          "src": "2221:26:1",
+                          "src": "2154:26:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2294,14 +2294,14 @@
                           "kind": "number",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "2250:1:1",
+                          "src": "2183:1:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_rational_0_by_1",
                             "typeString": "int_const 0"
                           },
                           "value": "0"
                         },
-                        "src": "2221:30:1",
+                        "src": "2154:30:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -2316,7 +2316,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "2253:29:1",
+                        "src": "2186:29:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_5136780377cc231258678d13fe3ea7b31bc96a5f8a36a4c81f29820551bb6214",
                           "typeString": "literal_string \"Description cannot be empty\""
@@ -2343,7 +2343,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "2213:7:1",
+                      "src": "2146:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -2357,7 +2357,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "2213:70:1",
+                    "src": "2146:70:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -2366,7 +2366,7 @@
                   },
                   "id": 255,
                   "nodeType": "ExpressionStatement",
-                  "src": "2213:70:1"
+                  "src": "2146:70:1"
                 },
                 {
                   "expression": {
@@ -2387,7 +2387,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 225,
-                          "src": "2302:9:1",
+                          "src": "2234:9:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2402,7 +2402,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 4294967292,
-                            "src": "2314:5:1",
+                            "src": "2246:5:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
                               "typeString": "block"
@@ -2415,13 +2415,13 @@
                           "lValueRequested": false,
                           "memberName": "timestamp",
                           "nodeType": "MemberAccess",
-                          "src": "2314:15:1",
+                          "src": "2246:15:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "src": "2302:27:1",
+                        "src": "2234:27:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -2436,7 +2436,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "2331:32:1",
+                        "src": "2263:32:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_d3e7aa4aa0cbec9a64fb6a0b8b9ffd2b31f86995a33f516b85a302b0ba10930e",
                           "typeString": "literal_string \"Deadline must be in the future\""
@@ -2463,7 +2463,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "2294:7:1",
+                      "src": "2226:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -2477,7 +2477,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "2294:70:1",
+                    "src": "2226:70:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -2486,7 +2486,7 @@
                   },
                   "id": 263,
                   "nodeType": "ExpressionStatement",
-                  "src": "2294:70:1"
+                  "src": "2226:70:1"
                 },
                 {
                   "expression": {
@@ -2507,7 +2507,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 227,
-                          "src": "2383:7:1",
+                          "src": "2314:7:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2524,14 +2524,14 @@
                           "kind": "number",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "2393:1:1",
+                          "src": "2324:1:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_rational_0_by_1",
                             "typeString": "int_const 0"
                           },
                           "value": "0"
                         },
-                        "src": "2383:11:1",
+                        "src": "2314:11:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -2546,7 +2546,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "2396:34:1",
+                        "src": "2327:34:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_b66af39f69e6274d03794297b811f68503663c94eb9f5367fcef2b437c6b2c6f",
                           "typeString": "literal_string \"Reward must be greater than zero\""
@@ -2573,7 +2573,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "2375:7:1",
+                      "src": "2306:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -2587,7 +2587,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "2375:56:1",
+                    "src": "2306:56:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -2596,7 +2596,7 @@
                   },
                   "id": 270,
                   "nodeType": "ExpressionStatement",
-                  "src": "2375:56:1"
+                  "src": "2306:56:1"
                 },
                 {
                   "expression": {
@@ -2612,7 +2612,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 113,
-                        "src": "2442:10:1",
+                        "src": "2372:10:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Milestone_$94_storage_$",
                           "typeString": "mapping(uint256 => struct ResearchProject.Milestone storage ref)"
@@ -2625,7 +2625,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 102,
-                        "src": "2453:13:1",
+                        "src": "2383:13:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -2636,7 +2636,7 @@
                       "isPure": false,
                       "lValueRequested": true,
                       "nodeType": "IndexAccess",
-                      "src": "2442:25:1",
+                      "src": "2372:25:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_struct$_Milestone_$94_storage",
                         "typeString": "struct ResearchProject.Milestone storage ref"
@@ -2652,7 +2652,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 221,
-                          "src": "2502:6:1",
+                          "src": "2431:6:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_string_memory_ptr",
                             "typeString": "string memory"
@@ -2664,7 +2664,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 223,
-                          "src": "2536:12:1",
+                          "src": "2464:12:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_string_memory_ptr",
                             "typeString": "string memory"
@@ -2676,7 +2676,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 225,
-                          "src": "2573:9:1",
+                          "src": "2500:9:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2688,7 +2688,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 227,
-                          "src": "2605:7:1",
+                          "src": "2531:7:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -2703,7 +2703,7 @@
                           "kind": "bool",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "2640:5:1",
+                          "src": "2565:5:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bool",
                             "typeString": "bool"
@@ -2721,7 +2721,7 @@
                               "kind": "number",
                               "lValueRequested": false,
                               "nodeType": "Literal",
-                              "src": "2681:1:1",
+                              "src": "2605:1:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_rational_0_by_1",
                                 "typeString": "int_const 0"
@@ -2742,7 +2742,7 @@
                             "isPure": true,
                             "lValueRequested": false,
                             "nodeType": "ElementaryTypeNameExpression",
-                            "src": "2673:7:1",
+                            "src": "2597:7:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_type$_t_address_$",
                               "typeString": "type(address)"
@@ -2751,7 +2751,7 @@
                               "id": 280,
                               "name": "address",
                               "nodeType": "ElementaryTypeName",
-                              "src": "2673:7:1",
+                              "src": "2597:7:1",
                               "typeDescriptions": {}
                             }
                           },
@@ -2763,7 +2763,7 @@
                           "lValueRequested": false,
                           "names": [],
                           "nodeType": "FunctionCall",
-                          "src": "2673:10:1",
+                          "src": "2597:10:1",
                           "tryCall": false,
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
@@ -2779,7 +2779,7 @@
                           "kind": "number",
                           "lValueRequested": false,
                           "nodeType": "Literal",
-                          "src": "2709:1:1",
+                          "src": "2632:1:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_rational_0_by_1",
                             "typeString": "int_const 0"
@@ -2792,7 +2792,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 229,
-                          "src": "2738:12:1",
+                          "src": "2660:12:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bytes32",
                             "typeString": "bytes32"
@@ -2839,7 +2839,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 94,
-                        "src": "2470:9:1",
+                        "src": "2400:9:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_type$_t_struct$_Milestone_$94_storage_ptr_$",
                           "typeString": "type(struct ResearchProject.Milestone storage pointer)"
@@ -2862,14 +2862,14 @@
                         "contentHash"
                       ],
                       "nodeType": "FunctionCall",
-                      "src": "2470:292:1",
+                      "src": "2400:283:1",
                       "tryCall": false,
                       "typeDescriptions": {
                         "typeIdentifier": "t_struct$_Milestone_$94_memory_ptr",
                         "typeString": "struct ResearchProject.Milestone memory"
                       }
                     },
-                    "src": "2442:320:1",
+                    "src": "2372:311:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_struct$_Milestone_$94_storage",
                       "typeString": "struct ResearchProject.Milestone storage ref"
@@ -2877,7 +2877,7 @@
                   },
                   "id": 288,
                   "nodeType": "ExpressionStatement",
-                  "src": "2442:320:1"
+                  "src": "2372:311:1"
                 },
                 {
                   "eventCall": {
@@ -2888,7 +2888,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 102,
-                        "src": "2876:13:1",
+                        "src": "2795:13:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -2900,7 +2900,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 223,
-                        "src": "2891:12:1",
+                        "src": "2810:12:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_string_memory_ptr",
                           "typeString": "string memory"
@@ -2912,7 +2912,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 225,
-                        "src": "2905:9:1",
+                        "src": "2824:9:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -2924,7 +2924,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 227,
-                        "src": "2916:7:1",
+                        "src": "2835:7:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -2936,7 +2936,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 229,
-                        "src": "2925:12:1",
+                        "src": "2844:12:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bytes32",
                           "typeString": "bytes32"
@@ -2971,7 +2971,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 143,
-                      "src": "2861:14:1",
+                      "src": "2780:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_string_memory_ptr_$_t_uint256_$_t_uint256_$_t_bytes32_$returns$__$",
                         "typeString": "function (uint256,string memory,uint256,uint256,bytes32)"
@@ -2985,7 +2985,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "2861:77:1",
+                    "src": "2780:77:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -2994,7 +2994,7 @@
                   },
                   "id": 296,
                   "nodeType": "EmitStatement",
-                  "src": "2856:82:1"
+                  "src": "2775:82:1"
                 },
                 {
                   "expression": {
@@ -3006,14 +3006,14 @@
                     "nodeType": "UnaryOperation",
                     "operator": "++",
                     "prefix": false,
-                    "src": "3344:15:1",
+                    "src": "3257:15:1",
                     "subExpression": {
                       "id": 297,
                       "name": "numMilestones",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 102,
-                      "src": "3344:13:1",
+                      "src": "3257:13:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -3026,7 +3026,7 @@
                   },
                   "id": 299,
                   "nodeType": "ExpressionStatement",
-                  "src": "3344:15:1"
+                  "src": "3257:15:1"
                 }
               ]
             },
@@ -3042,10 +3042,10 @@
                   "name": "onlyManager",
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 155,
-                  "src": "2121:11:1"
+                  "src": "2056:11:1"
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "2121:11:1"
+                "src": "2056:11:1"
               }
             ],
             "name": "addMilestone",
@@ -3061,7 +3061,7 @@
                   "name": "_title",
                   "nodeType": "VariableDeclaration",
                   "scope": 301,
-                  "src": "2006:20:1",
+                  "src": "1941:20:1",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -3072,7 +3072,7 @@
                     "id": 220,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2006:6:1",
+                    "src": "1941:6:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -3087,7 +3087,7 @@
                   "name": "_description",
                   "nodeType": "VariableDeclaration",
                   "scope": 301,
-                  "src": "2028:26:1",
+                  "src": "1963:26:1",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -3098,7 +3098,7 @@
                     "id": 222,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2028:6:1",
+                    "src": "1963:6:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_string_storage_ptr",
                       "typeString": "string"
@@ -3113,7 +3113,7 @@
                   "name": "_deadline",
                   "nodeType": "VariableDeclaration",
                   "scope": 301,
-                  "src": "2056:17:1",
+                  "src": "1991:17:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3124,7 +3124,7 @@
                     "id": 224,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2056:7:1",
+                    "src": "1991:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3139,7 +3139,7 @@
                   "name": "_reward",
                   "nodeType": "VariableDeclaration",
                   "scope": 301,
-                  "src": "2075:15:1",
+                  "src": "2010:15:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3150,7 +3150,7 @@
                     "id": 226,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2075:7:1",
+                    "src": "2010:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -3165,7 +3165,7 @@
                   "name": "_contentHash",
                   "nodeType": "VariableDeclaration",
                   "scope": 301,
-                  "src": "2092:20:1",
+                  "src": "2027:20:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -3176,7 +3176,7 @@
                     "id": 228,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "2092:7:1",
+                    "src": "2027:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -3185,16 +3185,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "2005:108:1"
+              "src": "1940:108:1"
             },
             "returnParameters": {
               "id": 233,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "2133:0:1"
+              "src": "2068:0:1"
             },
             "scope": 451,
-            "src": "1984:1383:1",
+            "src": "1919:1360:1",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
@@ -3203,7 +3203,7 @@
             "body": {
               "id": 342,
               "nodeType": "Block",
-              "src": "3444:240:1",
+              "src": "3354:232:1",
               "statements": [
                 {
                   "assignments": [
@@ -3217,7 +3217,7 @@
                       "name": "allMilestones",
                       "nodeType": "VariableDeclaration",
                       "scope": 342,
-                      "src": "3455:32:1",
+                      "src": "3364:32:1",
                       "stateVariable": false,
                       "storageLocation": "memory",
                       "typeDescriptions": {
@@ -3233,10 +3233,10 @@
                             "name": "Milestone",
                             "nodeType": "IdentifierPath",
                             "referencedDeclaration": 94,
-                            "src": "3455:9:1"
+                            "src": "3364:9:1"
                           },
                           "referencedDeclaration": 94,
-                          "src": "3455:9:1",
+                          "src": "3364:9:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                             "typeString": "struct ResearchProject.Milestone"
@@ -3244,7 +3244,7 @@
                         },
                         "id": 311,
                         "nodeType": "ArrayTypeName",
-                        "src": "3455:11:1",
+                        "src": "3364:11:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_struct$_Milestone_$94_storage_$dyn_storage_ptr",
                           "typeString": "struct ResearchProject.Milestone[]"
@@ -3262,7 +3262,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 102,
-                        "src": "3506:13:1",
+                        "src": "3415:13:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -3282,7 +3282,7 @@
                       "isPure": true,
                       "lValueRequested": false,
                       "nodeType": "NewExpression",
-                      "src": "3490:15:1",
+                      "src": "3399:15:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_objectcreation_pure$_t_uint256_$returns$_t_array$_t_struct$_Milestone_$94_memory_ptr_$dyn_memory_ptr_$",
                         "typeString": "function (uint256) pure returns (struct ResearchProject.Milestone memory[] memory)"
@@ -3296,10 +3296,10 @@
                             "name": "Milestone",
                             "nodeType": "IdentifierPath",
                             "referencedDeclaration": 94,
-                            "src": "3494:9:1"
+                            "src": "3403:9:1"
                           },
                           "referencedDeclaration": 94,
-                          "src": "3494:9:1",
+                          "src": "3403:9:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                             "typeString": "struct ResearchProject.Milestone"
@@ -3307,7 +3307,7 @@
                         },
                         "id": 315,
                         "nodeType": "ArrayTypeName",
-                        "src": "3494:11:1",
+                        "src": "3403:11:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_array$_t_struct$_Milestone_$94_storage_$dyn_storage_ptr",
                           "typeString": "struct ResearchProject.Milestone[]"
@@ -3322,7 +3322,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "3490:30:1",
+                    "src": "3399:30:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_struct$_Milestone_$94_memory_ptr_$dyn_memory_ptr",
@@ -3330,13 +3330,13 @@
                     }
                   },
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "3455:65:1"
+                  "src": "3364:65:1"
                 },
                 {
                   "body": {
                     "id": 338,
                     "nodeType": "Block",
-                    "src": "3577:59:1",
+                    "src": "3484:57:1",
                     "statements": [
                       {
                         "expression": {
@@ -3352,7 +3352,7 @@
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 312,
-                              "src": "3592:13:1",
+                              "src": "3498:13:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_array$_t_struct$_Milestone_$94_memory_ptr_$dyn_memory_ptr",
                                 "typeString": "struct ResearchProject.Milestone memory[] memory"
@@ -3365,7 +3365,7 @@
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 321,
-                              "src": "3606:1:1",
+                              "src": "3512:1:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -3376,7 +3376,7 @@
                             "isPure": false,
                             "lValueRequested": true,
                             "nodeType": "IndexAccess",
-                            "src": "3592:16:1",
+                            "src": "3498:16:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_struct$_Milestone_$94_memory_ptr",
                               "typeString": "struct ResearchProject.Milestone memory"
@@ -3391,7 +3391,7 @@
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 113,
-                              "src": "3611:10:1",
+                              "src": "3517:10:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Milestone_$94_storage_$",
                                 "typeString": "mapping(uint256 => struct ResearchProject.Milestone storage ref)"
@@ -3404,7 +3404,7 @@
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
                               "referencedDeclaration": 321,
-                              "src": "3622:1:1",
+                              "src": "3528:1:1",
                               "typeDescriptions": {
                                 "typeIdentifier": "t_uint256",
                                 "typeString": "uint256"
@@ -3415,13 +3415,13 @@
                             "isPure": false,
                             "lValueRequested": false,
                             "nodeType": "IndexAccess",
-                            "src": "3611:13:1",
+                            "src": "3517:13:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_struct$_Milestone_$94_storage",
                               "typeString": "struct ResearchProject.Milestone storage ref"
                             }
                           },
-                          "src": "3592:32:1",
+                          "src": "3498:32:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_struct$_Milestone_$94_memory_ptr",
                             "typeString": "struct ResearchProject.Milestone memory"
@@ -3429,7 +3429,7 @@
                         },
                         "id": 337,
                         "nodeType": "ExpressionStatement",
-                        "src": "3592:32:1"
+                        "src": "3498:32:1"
                       }
                     ]
                   },
@@ -3449,7 +3449,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 321,
-                      "src": "3553:1:1",
+                      "src": "3460:1:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -3463,13 +3463,13 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 102,
-                      "src": "3557:13:1",
+                      "src": "3464:13:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "3553:17:1",
+                    "src": "3460:17:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -3488,7 +3488,7 @@
                         "name": "i",
                         "nodeType": "VariableDeclaration",
                         "scope": 339,
-                        "src": "3538:9:1",
+                        "src": "3445:9:1",
                         "stateVariable": false,
                         "storageLocation": "default",
                         "typeDescriptions": {
@@ -3499,7 +3499,7 @@
                           "id": 320,
                           "name": "uint256",
                           "nodeType": "ElementaryTypeName",
-                          "src": "3538:7:1",
+                          "src": "3445:7:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -3518,7 +3518,7 @@
                       "kind": "number",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "3550:1:1",
+                      "src": "3457:1:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_rational_0_by_1",
                         "typeString": "int_const 0"
@@ -3526,7 +3526,7 @@
                       "value": "0"
                     },
                     "nodeType": "VariableDeclarationStatement",
-                    "src": "3538:13:1"
+                    "src": "3445:13:1"
                   },
                   "loopExpression": {
                     "expression": {
@@ -3538,14 +3538,14 @@
                       "nodeType": "UnaryOperation",
                       "operator": "++",
                       "prefix": false,
-                      "src": "3572:3:1",
+                      "src": "3479:3:1",
                       "subExpression": {
                         "id": 327,
                         "name": "i",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 321,
-                        "src": "3572:1:1",
+                        "src": "3479:1:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -3558,10 +3558,10 @@
                     },
                     "id": 329,
                     "nodeType": "ExpressionStatement",
-                    "src": "3572:3:1"
+                    "src": "3479:3:1"
                   },
                   "nodeType": "ForStatement",
-                  "src": "3533:103:1"
+                  "src": "3440:101:1"
                 },
                 {
                   "expression": {
@@ -3570,7 +3570,7 @@
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
                     "referencedDeclaration": 312,
-                    "src": "3663:13:1",
+                    "src": "3566:13:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_struct$_Milestone_$94_memory_ptr_$dyn_memory_ptr",
                       "typeString": "struct ResearchProject.Milestone memory[] memory"
@@ -3579,7 +3579,7 @@
                   "functionReturnParameters": 307,
                   "id": 341,
                   "nodeType": "Return",
-                  "src": "3656:20:1"
+                  "src": "3559:20:1"
                 }
               ]
             },
@@ -3594,7 +3594,7 @@
               "id": 302,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "3400:2:1"
+              "src": "3310:2:1"
             },
             "returnParameters": {
               "id": 307,
@@ -3607,7 +3607,7 @@
                   "name": "",
                   "nodeType": "VariableDeclaration",
                   "scope": 343,
-                  "src": "3424:18:1",
+                  "src": "3334:18:1",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -3623,10 +3623,10 @@
                         "name": "Milestone",
                         "nodeType": "IdentifierPath",
                         "referencedDeclaration": 94,
-                        "src": "3424:9:1"
+                        "src": "3334:9:1"
                       },
                       "referencedDeclaration": 94,
-                      "src": "3424:9:1",
+                      "src": "3334:9:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                         "typeString": "struct ResearchProject.Milestone"
@@ -3634,7 +3634,7 @@
                     },
                     "id": 305,
                     "nodeType": "ArrayTypeName",
-                    "src": "3424:11:1",
+                    "src": "3334:11:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_struct$_Milestone_$94_storage_$dyn_storage_ptr",
                       "typeString": "struct ResearchProject.Milestone[]"
@@ -3643,10 +3643,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3423:20:1"
+              "src": "3333:20:1"
             },
             "scope": 451,
-            "src": "3375:309:1",
+            "src": "3285:301:1",
             "stateMutability": "view",
             "virtual": false,
             "visibility": "public"
@@ -3655,7 +3655,7 @@
             "body": {
               "id": 436,
               "nodeType": "Block",
-              "src": "3798:808:1",
+              "src": "3698:790:1",
               "statements": [
                 {
                   "assignments": [
@@ -3669,7 +3669,7 @@
                       "name": "milestone",
                       "nodeType": "VariableDeclaration",
                       "scope": 436,
-                      "src": "3809:27:1",
+                      "src": "3708:27:1",
                       "stateVariable": false,
                       "storageLocation": "storage",
                       "typeDescriptions": {
@@ -3684,10 +3684,10 @@
                           "name": "Milestone",
                           "nodeType": "IdentifierPath",
                           "referencedDeclaration": 94,
-                          "src": "3809:9:1"
+                          "src": "3708:9:1"
                         },
                         "referencedDeclaration": 94,
-                        "src": "3809:9:1",
+                        "src": "3708:9:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                           "typeString": "struct ResearchProject.Milestone"
@@ -3704,7 +3704,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 113,
-                      "src": "3839:10:1",
+                      "src": "3738:10:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Milestone_$94_storage_$",
                         "typeString": "mapping(uint256 => struct ResearchProject.Milestone storage ref)"
@@ -3717,7 +3717,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 345,
-                      "src": "3850:11:1",
+                      "src": "3749:11:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -3728,14 +3728,14 @@
                     "isPure": false,
                     "lValueRequested": false,
                     "nodeType": "IndexAccess",
-                    "src": "3839:23:1",
+                    "src": "3738:23:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_struct$_Milestone_$94_storage",
                       "typeString": "struct ResearchProject.Milestone storage ref"
                     }
                   },
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "3809:53:1"
+                  "src": "3708:53:1"
                 },
                 {
                   "expression": {
@@ -3757,7 +3757,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 4294967292,
-                            "src": "3883:5:1",
+                            "src": "3780:5:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_block",
                               "typeString": "block"
@@ -3770,7 +3770,7 @@
                           "lValueRequested": false,
                           "memberName": "timestamp",
                           "nodeType": "MemberAccess",
-                          "src": "3883:15:1",
+                          "src": "3780:15:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
@@ -3785,7 +3785,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 355,
-                            "src": "3902:9:1",
+                            "src": "3799:9:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                               "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -3799,13 +3799,13 @@
                           "memberName": "deadline",
                           "nodeType": "MemberAccess",
                           "referencedDeclaration": 83,
-                          "src": "3902:18:1",
+                          "src": "3799:18:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         },
-                        "src": "3883:37:1",
+                        "src": "3780:37:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -3820,7 +3820,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "3922:31:1",
+                        "src": "3819:31:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_6b0de5b1dd30059ba90fd22d5199d69b35093400d62381c260e781f8e28da550",
                           "typeString": "literal_string \"Milestone deadline has passed\""
@@ -3847,7 +3847,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "3875:7:1",
+                      "src": "3772:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -3861,7 +3861,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "3875:79:1",
+                    "src": "3772:79:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -3870,7 +3870,7 @@
                   },
                   "id": 368,
                   "nodeType": "ExpressionStatement",
-                  "src": "3875:79:1"
+                  "src": "3772:79:1"
                 },
                 {
                   "expression": {
@@ -3884,7 +3884,7 @@
                         "nodeType": "UnaryOperation",
                         "operator": "!",
                         "prefix": true,
-                        "src": "3973:22:1",
+                        "src": "3869:22:1",
                         "subExpression": {
                           "expression": {
                             "id": 370,
@@ -3892,7 +3892,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 355,
-                            "src": "3974:9:1",
+                            "src": "3870:9:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                               "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -3906,7 +3906,7 @@
                           "memberName": "isCompleted",
                           "nodeType": "MemberAccess",
                           "referencedDeclaration": 87,
-                          "src": "3974:21:1",
+                          "src": "3870:21:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bool",
                             "typeString": "bool"
@@ -3926,7 +3926,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "3997:29:1",
+                        "src": "3893:29:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_b0050c84da30fd6bb495324ffb0e57756febb68f4d40855489f909c63cb85373",
                           "typeString": "literal_string \"Milestone already completed\""
@@ -3953,7 +3953,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "3965:7:1",
+                      "src": "3861:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -3967,7 +3967,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "3965:62:1",
+                    "src": "3861:62:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -3976,7 +3976,7 @@
                   },
                   "id": 375,
                   "nodeType": "ExpressionStatement",
-                  "src": "3965:62:1"
+                  "src": "3861:62:1"
                 },
                 {
                   "expression": {
@@ -3998,7 +3998,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 355,
-                            "src": "4046:9:1",
+                            "src": "3941:9:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                               "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -4012,7 +4012,7 @@
                           "memberName": "contentHash",
                           "nodeType": "MemberAccess",
                           "referencedDeclaration": 93,
-                          "src": "4046:21:1",
+                          "src": "3941:21:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bytes32",
                             "typeString": "bytes32"
@@ -4026,13 +4026,13 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 347,
-                          "src": "4071:12:1",
+                          "src": "3966:12:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_bytes32",
                             "typeString": "bytes32"
                           }
                         },
-                        "src": "4046:37:1",
+                        "src": "3941:37:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -4047,7 +4047,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "4085:29:1",
+                        "src": "3980:29:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_71e4d39d16de6d2c09c574235c4aa116af49ff4c23030287ca26467ed4b53822",
                           "typeString": "literal_string \"Content hash does not match\""
@@ -4074,7 +4074,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "4038:7:1",
+                      "src": "3933:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -4088,7 +4088,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "4038:77:1",
+                    "src": "3933:77:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -4097,7 +4097,7 @@
                   },
                   "id": 383,
                   "nodeType": "ExpressionStatement",
-                  "src": "4038:77:1"
+                  "src": "3933:77:1"
                 },
                 {
                   "expression": {
@@ -4113,7 +4113,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 355,
-                        "src": "4128:9:1",
+                        "src": "4021:9:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                           "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -4127,7 +4127,7 @@
                       "memberName": "isCompleted",
                       "nodeType": "MemberAccess",
                       "referencedDeclaration": 87,
-                      "src": "4128:21:1",
+                      "src": "4021:21:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
@@ -4144,14 +4144,14 @@
                       "kind": "bool",
                       "lValueRequested": false,
                       "nodeType": "Literal",
-                      "src": "4152:4:1",
+                      "src": "4045:4:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
                         "typeString": "bool"
                       },
                       "value": "true"
                     },
-                    "src": "4128:28:1",
+                    "src": "4021:28:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -4159,7 +4159,7 @@
                   },
                   "id": 389,
                   "nodeType": "ExpressionStatement",
-                  "src": "4128:28:1"
+                  "src": "4021:28:1"
                 },
                 {
                   "expression": {
@@ -4175,7 +4175,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 355,
-                        "src": "4167:9:1",
+                        "src": "4059:9:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                           "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -4189,7 +4189,7 @@
                       "memberName": "completedBy",
                       "nodeType": "MemberAccess",
                       "referencedDeclaration": 89,
-                      "src": "4167:21:1",
+                      "src": "4059:21:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
@@ -4204,7 +4204,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 4294967281,
-                        "src": "4191:3:1",
+                        "src": "4083:3:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
                           "typeString": "msg"
@@ -4217,13 +4217,13 @@
                       "lValueRequested": false,
                       "memberName": "sender",
                       "nodeType": "MemberAccess",
-                      "src": "4191:10:1",
+                      "src": "4083:10:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "src": "4167:34:1",
+                    "src": "4059:34:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
                       "typeString": "address"
@@ -4231,7 +4231,7 @@
                   },
                   "id": 396,
                   "nodeType": "ExpressionStatement",
-                  "src": "4167:34:1"
+                  "src": "4059:34:1"
                 },
                 {
                   "expression": {
@@ -4247,7 +4247,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 355,
-                        "src": "4212:9:1",
+                        "src": "4103:9:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                           "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -4261,7 +4261,7 @@
                       "memberName": "timestamp",
                       "nodeType": "MemberAccess",
                       "referencedDeclaration": 91,
-                      "src": "4212:19:1",
+                      "src": "4103:19:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -4276,7 +4276,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 4294967292,
-                        "src": "4234:5:1",
+                        "src": "4125:5:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_block",
                           "typeString": "block"
@@ -4289,13 +4289,13 @@
                       "lValueRequested": false,
                       "memberName": "timestamp",
                       "nodeType": "MemberAccess",
-                      "src": "4234:15:1",
+                      "src": "4125:15:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "4212:37:1",
+                    "src": "4103:37:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -4303,7 +4303,7 @@
                   },
                   "id": 403,
                   "nodeType": "ExpressionStatement",
-                  "src": "4212:37:1"
+                  "src": "4103:37:1"
                 },
                 {
                   "eventCall": {
@@ -4314,7 +4314,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 345,
-                        "src": "4286:11:1",
+                        "src": "4175:11:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -4327,7 +4327,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 4294967281,
-                          "src": "4299:3:1",
+                          "src": "4188:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
                             "typeString": "msg"
@@ -4340,7 +4340,7 @@
                         "lValueRequested": false,
                         "memberName": "sender",
                         "nodeType": "MemberAccess",
-                        "src": "4299:10:1",
+                        "src": "4188:10:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -4353,7 +4353,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 4294967292,
-                          "src": "4311:5:1",
+                          "src": "4200:5:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_block",
                             "typeString": "block"
@@ -4366,7 +4366,7 @@
                         "lValueRequested": false,
                         "memberName": "timestamp",
                         "nodeType": "MemberAccess",
-                        "src": "4311:15:1",
+                        "src": "4200:15:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -4393,7 +4393,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 123,
-                      "src": "4267:18:1",
+                      "src": "4156:18:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_address_$_t_uint256_$returns$__$",
                         "typeString": "function (uint256,address,uint256)"
@@ -4407,7 +4407,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "4267:60:1",
+                    "src": "4156:60:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -4416,7 +4416,7 @@
                   },
                   "id": 411,
                   "nodeType": "EmitStatement",
-                  "src": "4262:65:1"
+                  "src": "4151:65:1"
                 },
                 {
                   "assignments": [
@@ -4431,7 +4431,7 @@
                       "name": "success",
                       "nodeType": "VariableDeclaration",
                       "scope": 436,
-                      "src": "4415:12:1",
+                      "src": "4301:12:1",
                       "stateVariable": false,
                       "storageLocation": "default",
                       "typeDescriptions": {
@@ -4442,7 +4442,7 @@
                         "id": 412,
                         "name": "bool",
                         "nodeType": "ElementaryTypeName",
-                        "src": "4415:4:1",
+                        "src": "4301:4:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -4464,7 +4464,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "4474:2:1",
+                        "src": "4360:2:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
                           "typeString": "literal_string \"\""
@@ -4493,7 +4493,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 4294967281,
-                            "src": "4433:3:1",
+                            "src": "4319:3:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_magic_message",
                               "typeString": "msg"
@@ -4506,7 +4506,7 @@
                           "lValueRequested": false,
                           "memberName": "sender",
                           "nodeType": "MemberAccess",
-                          "src": "4433:10:1",
+                          "src": "4319:10:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_address",
                             "typeString": "address"
@@ -4519,7 +4519,7 @@
                         "lValueRequested": false,
                         "memberName": "call",
                         "nodeType": "MemberAccess",
-                        "src": "4433:15:1",
+                        "src": "4319:15:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_function_barecall_payable$_t_bytes_memory_ptr_$returns$_t_bool_$_t_bytes_memory_ptr_$",
                           "typeString": "function (bytes memory) payable returns (bool,bytes memory)"
@@ -4542,7 +4542,7 @@
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
                             "referencedDeclaration": 355,
-                            "src": "4456:9:1",
+                            "src": "4342:9:1",
                             "typeDescriptions": {
                               "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                               "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -4556,14 +4556,14 @@
                           "memberName": "reward",
                           "nodeType": "MemberAccess",
                           "referencedDeclaration": 85,
-                          "src": "4456:16:1",
+                          "src": "4342:16:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           }
                         }
                       ],
-                      "src": "4433:40:1",
+                      "src": "4319:40:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_barecall_payable$_t_bytes_memory_ptr_$returns$_t_bool_$_t_bytes_memory_ptr_$value",
                         "typeString": "function (bytes memory) payable returns (bool,bytes memory)"
@@ -4577,7 +4577,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "4433:44:1",
+                    "src": "4319:44:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$_t_bool_$_t_bytes_memory_ptr_$",
@@ -4585,7 +4585,7 @@
                     }
                   },
                   "nodeType": "VariableDeclarationStatement",
-                  "src": "4414:63:1"
+                  "src": "4300:63:1"
                 },
                 {
                   "expression": {
@@ -4596,7 +4596,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 413,
-                        "src": "4496:7:1",
+                        "src": "4381:7:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
                           "typeString": "bool"
@@ -4611,7 +4611,7 @@
                         "kind": "string",
                         "lValueRequested": false,
                         "nodeType": "Literal",
-                        "src": "4505:17:1",
+                        "src": "4390:17:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_stringliteral_25adaa6d082ce15f901e0d8a3d393e7462ef9edf2e6bc8321fa14d1615b6fc51",
                           "typeString": "literal_string \"Transfer failed\""
@@ -4638,7 +4638,7 @@
                         4294967278
                       ],
                       "referencedDeclaration": 4294967278,
-                      "src": "4488:7:1",
+                      "src": "4373:7:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
                         "typeString": "function (bool,string memory) pure"
@@ -4652,7 +4652,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "4488:35:1",
+                    "src": "4373:35:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -4661,7 +4661,7 @@
                   },
                   "id": 427,
                   "nodeType": "ExpressionStatement",
-                  "src": "4488:35:1"
+                  "src": "4373:35:1"
                 },
                 {
                   "eventCall": {
@@ -4672,7 +4672,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 345,
-                        "src": "4556:11:1",
+                        "src": "4439:11:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -4685,7 +4685,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 4294967281,
-                          "src": "4569:3:1",
+                          "src": "4452:3:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_magic_message",
                             "typeString": "msg"
@@ -4698,7 +4698,7 @@
                         "lValueRequested": false,
                         "memberName": "sender",
                         "nodeType": "MemberAccess",
-                        "src": "4569:10:1",
+                        "src": "4452:10:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_address",
                           "typeString": "address"
@@ -4711,7 +4711,7 @@
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
                           "referencedDeclaration": 355,
-                          "src": "4581:9:1",
+                          "src": "4464:9:1",
                           "typeDescriptions": {
                             "typeIdentifier": "t_struct$_Milestone_$94_storage_ptr",
                             "typeString": "struct ResearchProject.Milestone storage pointer"
@@ -4725,7 +4725,7 @@
                         "memberName": "reward",
                         "nodeType": "MemberAccess",
                         "referencedDeclaration": 85,
-                        "src": "4581:16:1",
+                        "src": "4464:16:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
                           "typeString": "uint256"
@@ -4752,7 +4752,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 131,
-                      "src": "4541:14:1",
+                      "src": "4424:14:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_address_$_t_uint256_$returns$__$",
                         "typeString": "function (uint256,address,uint256)"
@@ -4766,7 +4766,7 @@
                     "lValueRequested": false,
                     "names": [],
                     "nodeType": "FunctionCall",
-                    "src": "4541:57:1",
+                    "src": "4424:57:1",
                     "tryCall": false,
                     "typeDescriptions": {
                       "typeIdentifier": "t_tuple$__$",
@@ -4775,7 +4775,7 @@
                   },
                   "id": 435,
                   "nodeType": "EmitStatement",
-                  "src": "4536:62:1"
+                  "src": "4419:62:1"
                 }
               ]
             },
@@ -4792,7 +4792,7 @@
                     "nodeType": "Identifier",
                     "overloadedDeclarations": [],
                     "referencedDeclaration": 345,
-                    "src": "3785:11:1",
+                    "src": "3685:11:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -4805,10 +4805,10 @@
                   "name": "milestoneExists",
                   "nodeType": "IdentifierPath",
                   "referencedDeclaration": 175,
-                  "src": "3769:15:1"
+                  "src": "3669:15:1"
                 },
                 "nodeType": "ModifierInvocation",
-                "src": "3769:28:1"
+                "src": "3669:28:1"
               }
             ],
             "name": "completeMilestone",
@@ -4824,7 +4824,7 @@
                   "name": "milestoneId",
                   "nodeType": "VariableDeclaration",
                   "scope": 437,
-                  "src": "3719:19:1",
+                  "src": "3619:19:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -4835,7 +4835,7 @@
                     "id": 344,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3719:7:1",
+                    "src": "3619:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -4850,7 +4850,7 @@
                   "name": "_contentHash",
                   "nodeType": "VariableDeclaration",
                   "scope": 437,
-                  "src": "3740:20:1",
+                  "src": "3640:20:1",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -4861,7 +4861,7 @@
                     "id": 346,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "3740:7:1",
+                    "src": "3640:7:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -4870,16 +4870,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "3718:43:1"
+              "src": "3618:43:1"
             },
             "returnParameters": {
               "id": 352,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "3798:0:1"
+              "src": "3698:0:1"
             },
             "scope": 451,
-            "src": "3692:914:1",
+            "src": "3592:896:1",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "public"
@@ -4888,7 +4888,7 @@
             "body": {
               "id": 445,
               "nodeType": "Block",
-              "src": "4689:44:1",
+              "src": "4568:42:1",
               "statements": [
                 {
                   "expression": {
@@ -4903,7 +4903,7 @@
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
                       "referencedDeclaration": 100,
-                      "src": "4700:12:1",
+                      "src": "4578:12:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
@@ -4918,7 +4918,7 @@
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
                         "referencedDeclaration": 4294967281,
-                        "src": "4716:3:1",
+                        "src": "4594:3:1",
                         "typeDescriptions": {
                           "typeIdentifier": "t_magic_message",
                           "typeString": "msg"
@@ -4931,13 +4931,13 @@
                       "lValueRequested": false,
                       "memberName": "value",
                       "nodeType": "MemberAccess",
-                      "src": "4716:9:1",
+                      "src": "4594:9:1",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "src": "4700:25:1",
+                    "src": "4578:25:1",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -4945,7 +4945,7 @@
                   },
                   "id": 444,
                   "nodeType": "ExpressionStatement",
-                  "src": "4700:25:1"
+                  "src": "4578:25:1"
                 }
               ]
             },
@@ -4960,16 +4960,16 @@
               "id": 438,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4671:2:1"
+              "src": "4550:2:1"
             },
             "returnParameters": {
               "id": 439,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4689:0:1"
+              "src": "4568:0:1"
             },
             "scope": 451,
-            "src": "4651:82:1",
+            "src": "4530:80:1",
             "stateMutability": "payable",
             "virtual": false,
             "visibility": "public"
@@ -4978,7 +4978,7 @@
             "body": {
               "id": 449,
               "nodeType": "Block",
-              "src": "4811:2:1",
+              "src": "4685:2:1",
               "statements": []
             },
             "id": 450,
@@ -4991,26 +4991,26 @@
               "id": 447,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4791:2:1"
+              "src": "4665:2:1"
             },
             "returnParameters": {
               "id": 448,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "4811:0:1"
+              "src": "4685:0:1"
             },
             "scope": 451,
-            "src": "4784:29:1",
+            "src": "4658:29:1",
             "stateMutability": "payable",
             "virtual": false,
             "visibility": "external"
           }
         ],
         "scope": 452,
-        "src": "343:4473:1"
+        "src": "328:4361:1"
       }
     ],
-    "src": "33:4785:1"
+    "src": "32:4658:1"
   },
   "compiler": {
     "name": "solc",
@@ -5018,7 +5018,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-05-25T13:07:17.418Z",
+  "updatedAt": "2025-06-22T00:51:40.086Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
