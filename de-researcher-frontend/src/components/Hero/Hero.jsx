@@ -1,6 +1,8 @@
 import React from 'react'
 import Hero2 from './Hero2'
 import {tokenData} from './tokenData'
+import WalletConnector from '@/walletUtils/WalletConnector'
+import GetStarted from '@/walletUtils/GetStarted'
 function Hero() {
   return (
     <div className='w-[100%] pt-20'>
@@ -14,9 +16,8 @@ function Hero() {
                 Submit your project topics, incentivize research, and unlock progress with the
                 power of blockchain.
                 </p>
-                <button className="bg-custom-gradient mt-10 px-7 py-2 rounded-full ">
-                Get Started
-                </button>
+              
+                <GetStarted />
             </div>
 
            <div className='h-96 hidden  lg:flex justify-center w-[100%] lg:w-[30%] bg-cover overflow-hidden bg-center relative'>

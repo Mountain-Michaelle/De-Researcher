@@ -21,7 +21,7 @@ const {account, connectWallet, disconnectWallet, handleCancel} = useWalletConnec
       :
       (
       <Alert handleDisconnect={disconnectWallet} text={"You are about to disconnect your wallet!"} 
-        account={account} handleCancel={handleCancel} />
+        account={typeof window !== 'undefined' && localStorage.getItem('account')} handleCancel={handleCancel} />
       )
     }
      </>
