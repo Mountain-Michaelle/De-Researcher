@@ -28,7 +28,7 @@ const handleConnect = () => {
         isConnected ? '' 
         :
         <AlertDialog>
-        <AlertDialogTrigger>
+        <AlertDialogTrigger className='border-none outline-none'>
     
         <button className="bg-custom-gradient mt-10 px-7 py-2 rounded-full ">
         Get Started
