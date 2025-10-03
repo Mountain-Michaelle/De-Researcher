@@ -20,29 +20,24 @@ export function useProjectData(){
             const cleanData = proj[0].map(item => ({
               title: item[0], 
               description: item[1],
-              // stake: ethers.utils.formatEther(item[2]), //BigNumber to wei
               stake: ethers?.BigNumber.from(item[2]).toString(), //BigNumber to hex
               creator: item[3],
-              projectId: item[4],
+              projectId:item[6] ,
               investor: item[5],
-              contributors: item[6] 
+              contributors:item[4]
           }));
           
             const lastFourProject = cleanData.slice(-4).reverse()
             setContractAddress(cleanData.contractAddress)
-            // console.log(lastFourProject, " Last four")
             setProjects(Array.isArray(lastFourProject) ? lastFourProject : []) // Forced into Array
-            // setProject(JSON.stringify(cleanData, null, 2))
             
           }else{
             setProjects([]);
           }     
     } 
-
     const fetchMyprojects = async () => {
         const {contractInstance, address} = await connectWallet()
         const proj = await contractInstance.getProjectsByCreator(address)
-        console.log("Projit", proj)
         if(Array.isArray(proj) && proj.length > 0){
         //     const cleanData = proj[0]
         //         .filter(item => Array.isArray(item) && item.length > 0)
@@ -74,18 +69,12 @@ export function useProjectData(){
         // console.log("From my new proj", myproject?.map((item, index) => item.title))
         }
          }
-
-     const triggerReload = () => {
-        setReloadTrigger(prev => prev + 1)
-    };
-    
-    
+         
     useEffect(() => {
             fetchAllProjects()
             fetchMyprojects()
           },[reloadTrigger])
 
-   
-
-    return {projects, myproject, triggerReload, reloadTrigger}
+    return {projects, myproject, refresh:fetchAllProjects,
+      refreshfetchMyprojects:fetchMyprojects, refreshAllProjects:fetchAllProjects}
 }

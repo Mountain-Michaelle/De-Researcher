@@ -29,9 +29,9 @@ import { ethers } from "ethers";
 import ResearchProjectABI from "../../../truffle_abis/ResearchProject.json"
 
 
-  export function CreateProjectMileStone({bg, researchProjectABI, contractId, text}) {
+  export function CreateProjectMileStone({bg, onMilestoneAdded, contractId, text}) {
     const [isLoading, setIsLoading] = useState(null)
-    const {triggerReload, reloadTrigger} = useProjectData()
+    const {triggerReload, fetchAllProjects} = useProjectData()
     const [milstone, setMilestone] = useState([])
     const handleLoadProject = async () => {
          triggerReload()
@@ -94,6 +94,7 @@ import ResearchProjectABI from "../../../truffle_abis/ResearchProject.json"
         const tx = await projectContract.addMilestone(title, description, deadline, reward, contentHash)
         await tx.wait()
         handleShowToast("Congratulations ✔️", "You added a milestone successfully", "success")
+        onMilestoneAdded()
         setIsLoading(!!isLoading)
         triggerReload()
         resetForm()
@@ -108,7 +109,7 @@ import ResearchProjectABI from "../../../truffle_abis/ResearchProject.json"
     const getMileStones = async () => {
 
       try{
-              const {contractInstance, signer} = await connectWallet() 
+      const {contractInstance, signer} = await connectWallet() 
       const projectAddress = await contractInstance.getProjectAddress(contractId)
       const projectContract = new ethers.Contract(projectAddress, ResearchProjectABI.abi, signer)
       const milestones = await projectContract.getAllMilestones();
@@ -125,7 +126,6 @@ import ResearchProjectABI from "../../../truffle_abis/ResearchProject.json"
       getMileStones()
     },[])
 
-    console.log(milstone, "Milestones")
 
     return (
       <AlertDialog >
@@ -235,7 +235,7 @@ import ResearchProjectABI from "../../../truffle_abis/ResearchProject.json"
             </form>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex items-center gap-3 m-0">
-            <AlertDialogCancel onClick={handleLoadProject}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -10,6 +10,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {disconnectWallet} from '../redux/wallet/walletActions';
+import {useDispatch} from 'react-redux';
 
 export const Popup = ({handleDisconnect,
                  handleCancel, isVisible, text,
@@ -54,8 +56,9 @@ export const Popup = ({handleDisconnect,
   );
 };
 
-export const Alert = ({handleDisconnect, account, handleCancel, isVisible, text, }) => {
-
+export const Alert = ({account, handleCancel, text}) => {
+  const dispatch = useDispatch()
+  
   return(
    <AlertDialog>
     <AlertDialogTrigger>
@@ -73,14 +76,14 @@ export const Alert = ({handleDisconnect, account, handleCancel, isVisible, text,
           <img src="/images/wallet.png" className=" absolute -z-20 -bottom-2 -right-3" width={180} alt="" />
         <AlertDialogHeader>
           <AlertDialogTitle className="text-white">Are you sure?</AlertDialogTitle>
-          <AlertDialogDescription className="text-red-200 text-[16px]">
+          <AlertDialogDescription className="text-red-300 text-[16px]">
             {text}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
         <div className="flex items-center gap-3">
           <AlertDialogCancel className="m-0" onClick={handleCancel}>Cancel</AlertDialogCancel>
-        <AlertDialogAction onClick={handleDisconnect}>Continue</AlertDialogAction>
+        <AlertDialogAction onClick={() => {dispatch(disconnectWallet())}}>Hide</AlertDialogAction>
         </div>
         
       </AlertDialogFooter>

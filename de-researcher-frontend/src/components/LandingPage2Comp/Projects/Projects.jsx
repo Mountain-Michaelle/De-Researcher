@@ -129,7 +129,7 @@ const Projects = () => {
               },
               {
                 step:'4',
-                type: 'Transparency  in Decentralized Voting ',
+                type: 'Transparency in Decentralized Voting ',
                 contributors: '',
                 rwa: '250',
                 status: true

@@ -1,15 +1,35 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { shortenAddress } from '@/walletUtils/addressShortener'
 import { Button } from '@/components/ui/button'
 import { ChevronsRight } from 'lucide-react'
 import { useNavigate } from 'react-router'
+import { ethers } from "ethers";
+
 
 const ProjectCard = ({project, index, openIndex}) => {
+    const [selectId, setSelectId] = useState([])
     const navigate = useNavigate()
 
-    const handleNavigate = (projectId, title) => {
-        navigate(`detail/${title}/${projectId}`, { state: project })
+    // console.log(selectId, "Hex value")
+
+   const handleSelectNavigate = (clickedProject, title, creator) => {
+  let projectIdInt = null;
+
+  project.forEach((project) => {
+    if (project.projectId === clickedProject) {
+      projectIdInt = project.projectId
     }
+  });
+    // ethers.BigNumber.from(project.projectId?._hex).toNumber();
+  if (projectIdInt !== null) {
+    // update state
+    setSelectId([projectIdInt]);
+
+    // use local variable directly for navigation
+    navigate(`detail/${title}/${creator+creator+projectIdInt}/${projectIdInt}`, { state: projectIdInt });
+  }
+};
+
   return (
     <div className={ openIndex === index ? "flex gap-4 m-4": "hidden"} style={{flexFlow: 'wrap', justifyContent:'center'}}> 
     <>
@@ -59,7 +79,7 @@ const ProjectCard = ({project, index, openIndex}) => {
                         style={{ width: "45%" }}
                         ></div> */}
                         <div className='w-full p-3 relative flex justify-end'>
-                            <Button onClick={() => {handleNavigate(projData.projectId, projData.title)}} className="w-fi bg-custom-gradient border-none absolute right-0 mt-2 text-gray-200">View More <ChevronsRight /></Button>
+                            <Button onClick={() => {handleSelectNavigate(projData.projectId, projData.title, projData.creator)}} className="w-fi bg-custom-gradient border-none absolute right-0 mt-2 text-gray-200">View More <ChevronsRight /></Button>
                         </div>
                         
                     </div>

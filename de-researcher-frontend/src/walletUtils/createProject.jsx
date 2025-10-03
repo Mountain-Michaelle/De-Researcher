@@ -9,7 +9,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog";
-  import { connectWallet } from "./Wallet";
+  import {useDispatch, useSelector} from 'react-redux';
+  import { resetStatus } from '../redux/projects/projectReducers'; 
+  import {createProject} from '../redux/projects/projectActions'
   import { Button } from "@/components/ui/button"
   import { Card, CardContent } from "@/components/ui/card"
   import { Textarea } from "@/components/ui/textarea"
@@ -19,18 +21,13 @@ import {
   import { useToast } from "@/hooks/use-toast";
   import * as Yup from 'yup';
 
-import { useState } from "react"
-import { useProjectData } from "./hooks/useProjectData";
+import { useEffect } from "react"
 
   export function AlertCreateProject({bg, text}) {
-    const [isLoading, setIsLoading] = useState(null)
-    const {triggerReload, reloadTrigger} = useProjectData()
-    
-    const handleLoadProject = async () => {
-         triggerReload()
-    }
     const {toast} = useToast();
-
+    const dispatch = useDispatch();
+    const { loading, success, error } = useSelector((state) => state.projects);
+    
     const handleShowToast = (title, description, type) => {
         toast({
           title: title,
@@ -39,6 +36,19 @@ import { useProjectData } from "./hooks/useProjectData";
           className: type === "success" ? "bg-custom-gradient text-green-200 font-semibold" : "bg-red-500 text-white",
         });
       };
+
+    useEffect(() => {
+        if (success) {
+        handleShowToast("Congratulations ✔️", "Your project has been created successfully", "success");
+        dispatch(resetStatus()); // clear status after handling
+        }
+
+      if (error) {
+        handleShowToast("Error ❌", error, "error");
+        dispatch(resetStatus());
+      }
+        
+    },[success, error, dispatch])
 
 
     const formik = useFormik({
@@ -56,28 +66,12 @@ import { useProjectData } from "./hooks/useProjectData";
       }),
 
       onSubmit: async (values, {resetForm}) => {
-        setIsLoading(!isLoading)
-        const {contractInstance} = await connectWallet()
-        
-        try{
-
-         const projectData = {
-          title: values.projectTitle,
-          description: values.description,
-          stake: values.stakeInput
-        };
-        const {title, description, stake} = projectData
-
-        const tx = await contractInstance.createResearchProject(title, description, stake)
-        await tx.wait()
-        handleShowToast("Congratulations ✔️", "Your project had been created successfully", "success")
-        setIsLoading(!!isLoading)
-        triggerReload()
-        resetForm()
-        }catch(error){
-            setIsLoading(!!isLoading)
-            handleShowToast("Error ❌", "Something went wrong, Please try again later", "error")
-        }
+        dispatch(createProject({
+        title: values.projectTitle,
+        description: values.description,
+        stake: values.stakeInput,
+          }));
+      resetForm()
       },
     });
 
@@ -152,8 +146,8 @@ import { useProjectData } from "./hooks/useProjectData";
                     <p className="text-red-300 text-left text-xs mt-1">{formik.errors.stakeInput}</p>
                 ) : null}
                 </div>
-                { isLoading === true ?
-                 <Button disable={true} type="button">Creating...</Button> 
+                { loading ?
+                 <Button disabled type="button">Creating...</Button> 
                 : 
                 <Button type="submit">Submit a project</Button> }
 
@@ -162,7 +156,7 @@ import { useProjectData } from "./hooks/useProjectData";
             </form>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex items-center gap-3 m-0">
-            <AlertDialogCancel onClick={handleLoadProject}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

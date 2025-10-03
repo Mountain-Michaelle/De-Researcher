@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useProjectData } from '@/walletUtils/hooks/useProjectData';
 
 const CreateProjectForm = React.memo(() => {
   const [milestones, setMilestones] = useState([]);
@@ -15,6 +16,9 @@ const CreateProjectForm = React.memo(() => {
     errorMileStone: '',
     errorStake: ''
   })
+
+  const {fetchAllProjects} = useProjectData()
+
   const [project_milestone, setProject_milestone] = useState({ milestones: [] });
 
   const [projectFile, setProjectFile] = useState(null)
@@ -47,7 +51,8 @@ const CreateProjectForm = React.memo(() => {
         project_milestone: project_milestone.milestones.length === 0 ? [{}] : project_milestone,
         file: projectFile ? projectFile.name : null,
       };
-
+      
+      fetchAllProjects()
       console.log(projectData);
       // Send `projectData` to the server via an API request here
     },

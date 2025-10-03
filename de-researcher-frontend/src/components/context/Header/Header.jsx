@@ -1,61 +1,74 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom';
 import WalletConnector from '../../../walletUtils/WalletConnector';
 import { Dropdown } from './DropDown';
 
-
-
-
 const Header = () => {
+  const [sticky, setSticky] = useState(false);
 
-    const [sticky, setSticky] = useState(false);
+  useEffect(() => {
+    const getScrollTop = () => {
+      const scEl = document.scrollingElement || document.documentElement || document.body;
+      return scEl.scrollTop ?? window.scrollY ?? 0;
+    };
 
     const handleStickyNavbar = () => {
-      if (window.scrollY >= 80) {
-        setSticky(true);
-      } else {
-        setSticky(false);
-      }
+      const scrollY = getScrollTop();
+      const threshold = 50;
+      setSticky(scrollY >= threshold);
     };
-    useEffect(() => {
-      window.addEventListener("scroll", handleStickyNavbar);
-    });
 
+    window.addEventListener("scroll", handleStickyNavbar);
+    handleStickyNavbar(); // run once on mount
+
+    return () => window.removeEventListener("scroll", handleStickyNavbar);
+  }, []);
+
+ useEffect(() => {
+  const handleStickyNavbar = () => {
+    const scrollY = window.scrollY || document.documentElement.scrollTop;
+    const newSticky = scrollY >= 50;
+    setSticky(newSticky);
+    console.log("scrollY:", scrollY, "sticky:", newSticky);
+  };
+
+  window.addEventListener("scroll", handleStickyNavbar);
+  handleStickyNavbar(); // run once on mount
+
+  return () => window.removeEventListener("scroll", handleStickyNavbar);
+}, []);
+
+  console.log(sticky, "Sticky")
 
   return (
     <header
-    className={`header left-0 top-0 z-40 flex w-[100%] items-center ${ sticky
-        ? "dark:shadow-sticky-dark fixed z-[9999] !bg-opacity-80 shadow-sticky backdrop-blur-sm transition"
-        : "absolute bg-transparent"
-        }`}
-        > 
-        <div className="flex placeholder:w-full w-[100%] py-3 justify-between md: pr-3 pl-3 items-center">
-
-        <div className=''>
-            <Link to="/" className="text-2xl ml-2 font-bold text-white">
-                <span className="text-blue-500 text-xl">Bloc-</span>search
-            </Link> 
+      className={`flex z-40 w-full ${
+        sticky
+          ? "fixed top-0 left-0 dark:shadow-sticky-dark z-[9999] !bg-opacity-80 shadow-sticky backdrop-blur-sm transition bg-black"
+          : "relative bg-transparent"
+      }`}
+    > 
+      <div className="flex w-full py-3 justify-between md:pr-3 pl-3 items-center">
+        <div>
+          <Link to="/" className="text-2xl ml-2 font-bold text-white">
+            <span className="text-blue-500 text-xl">Bloc-</span>search
+          </Link> 
         </div>
-        
-        
-        <div className="text-white ml-18 items-center gap-4 flex justify-between text-lg px-5">
-          <div className='hidden md:flex lg:flex sm:hidden  w-full gap-8'>
-          <Link className='text-[16px]' to="/">How it works</Link >
-            <Link className='text-[16px]' to="projects">Projects</Link >
+
+        <div className="text-white items-center gap-4 flex justify-between text-lg px-5">
+          <div className="hidden md:flex lg:flex sm:hidden w-full gap-8">
+            <Link className="text-[16px]" to="/">How it works</Link>
+            <Link className="text-[16px]" to="projects">Projects</Link>
           </div>
-          <div className='flex md:hidden'>
+          <div className="flex md:hidden">
             <Dropdown />
           </div>
-          <div className='hidden md:flex'>
+          <div className="hidden md:flex">
             <WalletConnector />
-            {/* <ThemeToggler /> */}
           </div>
         </div>
-        
-        </div>  
-  </header>
-
-
+      </div>  
+    </header>
   )
 }
 

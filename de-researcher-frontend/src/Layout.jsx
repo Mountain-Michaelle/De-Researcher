@@ -4,6 +4,8 @@ import Header from './components/context/Header/Header'
 import { ThemeProvider } from './context/Provider'
 import Footer from './components/context/Footer/Footer'
 import { Toaster } from './components/ui/toaster'
+import {Provider} from "react-redux";
+import store from './redux/store';
 import { Toast } from 'bootstrap'
 
 const Layout = ({children}) => {
@@ -28,10 +30,12 @@ const Layout = ({children}) => {
     {/** background bobs */}
     <img className='absolute right-0 top-0 text-red-500 b -z-10' src="/images/bobs/bob1.svg" width={'100%'} alt="" /> 
     {/** Bobs ends */}
-
+      <Provider store={store}>
         <Header />
         {children}
         <Toaster />
+      </Provider>
+        
 
         <Footer showFooter={showFooter} />   
           

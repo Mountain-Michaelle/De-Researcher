@@ -1,31 +1,27 @@
 "use client"
-import React, { useState } from 'react'
-import { topicData, topicData2 } from './topic'
-import { Button } from '@/components/ui/button'
-import { Link } from 'react-router'
-import { ethers } from 'ethers'
+import React, { useState, useEffect} from 'react'
+import { topicData} from './topic'
 import { topicHeader } from './topicHeader'
 import ProjectCard from './ProjectCard'
 import { AlertCreateProject } from '@/walletUtils/createProject'
 import { useProjectData } from '@/walletUtils/hooks/useProjectData'
+import {useDispatch, useSelector} from "react-redux";
+import {fetchAllProjects, fetchMyProjects} from "../../../redux/projects/projectActions";
 
-function Research({project, myproject, triggerReload}) {
+function Research() {
 
     const [openIndex, setOpenIndex] = useState(0)
-    // const [triggerReload] = useProjectData()
-    // console.log("is it an array ", Array.isArray(project))
-// 
-    // const formattedProjects = project.map((project, index) => ({
-    //     title: project[0],  // First element in the array
-    //     totalFunding: ethers.utils.formatEther(project[1]), // Convert BigNumber to readable ETH
-    //     manager: project[2],
-    //     projectHash: project[3],
-    //     projectAddress: project[4],
-    // }));
+    const dispatch = useDispatch();
+    const  {myProjects, allProjects,  loading, error} = useSelector((state) => state.projects);
 
-    // console.log("Formatted Projec ", formattedProjects)
+    useEffect(() => {
+        dispatch(fetchAllProjects())
+        dispatch(fetchMyProjects())
+    },[dispatch])
+
+    console.log("my projects", myProjects)
+
     const handleSubData = (index) => {
-        triggerReload()
         if(openIndex === index){
             setOpenIndex(0)
         }else{
@@ -58,16 +54,13 @@ function Research({project, myproject, triggerReload}) {
                     )
                 })
             }
-
-
         </div>
         
         
-        {/* style={{flexFlow: 'wrap row', justifyContent:'center'}}> */}
           {topicHeader.map((proj, index) => (
             <>
             {
-                proj.id === 3 && <ProjectCard index={index} project={myproject} openIndex={openIndex} />
+                proj.id === 3 && <ProjectCard index={index} project={myProjects} openIndex={openIndex} />
             }
             
             {
@@ -75,19 +68,14 @@ function Research({project, myproject, triggerReload}) {
             }
 
             {
-                proj.id === 1 && <ProjectCard index={index} project={project} openIndex={openIndex} />
+                proj.id === 1 && <ProjectCard index={index} project={allProjects} openIndex={openIndex} />
             }
             </>
 
           
           ))}
-      
+              
 
-
-        {/* Copied Data */}
-        
- 
-        
 
         <div className='w-[95%] m-auto rounded-lg h-100 p-5 flex flex-col md:flex-row items-center justify-center my-16' 
         style={{backgroundImage: 'linear-gradient(83.07deg, #5200FF 6.18%, #2C86D9 97%)', 
@@ -98,7 +86,8 @@ function Research({project, myproject, triggerReload}) {
                 </h2>
                 <div className=' mt-5 mb-5 md:mt-20 w-fit'
                 >
-                    <AlertCreateProject triggerReload={triggerReload} bg={{backgroundImage: 'linear-gradient(86.03deg, #A5DEFF 3.48%, #FFFFFF 102.21%)'}} text={"Uplaod Now"}/>
+                    <AlertCreateProject
+                     bg={{backgroundImage: 'linear-gradient(86.03deg, #A5DEFF 3.48%, #FFFFFF 102.21%)'}} text={"Uplaod Now"}/>
                 </div>    
 
             </div>
