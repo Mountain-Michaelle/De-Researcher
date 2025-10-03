@@ -75,7 +75,7 @@ const Header = () => {
           </div>
             {
                   error ? 
-                  <div onClick={() => dispatch(disconnectWallet())} className='fixed z-100 left-0 top-0 w-full -mt-10 md:m-0
+                  <div onClick={() => dispatch(disconnectWallet())} className='fixed inset-0 z-100 left-0 top-0 w-full -mt-10 md:m-0
                    h-full flex justify-center items-center bg-red-500/10'>
                     <AlertUp 
                     text={error.toLowerCase().includes("wallet_requestpermissions") ?

@@ -11,7 +11,7 @@ function Hero() {
     
   return (
     
-    <div className='w-[100%] pt-20'>
+    <div className='w-[100%]'>
           {/* Hero Section */}
           
         <div className='w-full flex flex-col lg:flex-row items-center justify-center text-gray-50'>
