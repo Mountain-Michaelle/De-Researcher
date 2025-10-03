@@ -77,8 +77,14 @@ const Header = () => {
                   error ? 
                   <div onClick={() => dispatch(disconnectWallet())} className='fixed z-100 left-0 top-0 w-full -mt-10 md:m-0
                    h-full flex justify-center items-center bg-red-500/10'>
-                    <AlertUp text={error} variant="destructive"
-                     description="Please install a wallet extension to continue"/>
+                    <AlertUp 
+                    text={error.toLowerCase().includes("wallet_requestpermissions") ?
+                       'Request already pending for this origin' : error} variant="destructive"
+                     description={`
+                     ${error?.toLowerCase().includes("pending") ? "User request pending, please wait or check your wallet.":''}
+                     ${error?.toLowerCase().includes("rejected") ? "User request is aborted": ''}
+                     ${error?.toLowerCase().includes("not installed") ? "Please install a wallet extension to continue.": ''}
+                     `}/>
                   </div>
                   : 
                   ''
