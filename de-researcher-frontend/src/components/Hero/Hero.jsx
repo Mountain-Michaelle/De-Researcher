@@ -1,12 +1,19 @@
 import React from 'react'
 import Hero2 from './Hero2'
+import {useDispatch, useSelector} from 'react-redux';
+import {disconnectWallet} from '../../redux/wallet/walletActions';
 import {tokenData} from './tokenData'
-import WalletConnector from '@/walletUtils/WalletConnector'
 import GetStarted from '@/walletUtils/GetStarted'
+import { AlertUp } from '@/walletUtils/Alert';
 function Hero() {
+    const {error} = useSelector((state) => state.wallet);
+    const dispatch = useDispatch()
+    
   return (
+    
     <div className='w-[100%] pt-20'>
           {/* Hero Section */}
+          
         <div className='w-full flex flex-col lg:flex-row items-center justify-center text-gray-50'>
             <div className="flex lg:space-x-3 flex-col lg:flex-start items-center lg:items-baseline w-full py-20 lg:w-[50%] justify-center">
                 <h1 className="text-6md text-[200%] text-center lg:text-left md:text-5xl text-white font-bold">
@@ -16,8 +23,10 @@ function Hero() {
                 Submit your project topics, incentivize research, and unlock progress with the
                 power of blockchain.
                 </p>
+                
               
                 <GetStarted />
+               
             </div>
 
            <div className='h-96 hidden  lg:flex justify-center w-[100%] lg:w-[30%] bg-cover overflow-hidden bg-center relative'>

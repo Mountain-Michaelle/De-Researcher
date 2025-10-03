@@ -1,8 +1,13 @@
 import React from 'react'
 import { AlertCreateProject } from '@/walletUtils/createProject'
+import WalletConnector from '../../../walletUtils/WalletConnector';
+import {useDispatch, useSelector} from "react-redux";
+
 
 const HeroConnectedWallet = () => {
   
+  const {isConnected} = useSelector((state) => state.wallet)
+
   return (
     <div>
         <div className='w-full flex flex-col lg:flex-row mx-1 pt-24 items-center justify-center text-gray-50'>
@@ -14,7 +19,16 @@ const HeroConnectedWallet = () => {
                 Access over 160 million publication pages and stay up to date with what's happening in your field.
                 </p>
                <div>
-                <AlertCreateProject bg={{backgroundImage: 'linear-gradient(83.07deg, #5200FF 6.18%, #2C86D9 97%)'}} text={"Submit a Project"} />
+                {
+                  isConnected ?
+                <AlertCreateProject bg={{backgroundImage:
+                   'linear-gradient(83.07deg, #5200FF 6.18%, #2C86D9 97%)'}} text={"Submit a Project"} />
+                   :
+                <div className="mt-8">
+                  <WalletConnector text="" bgStyle="#361b83f0"  />
+                </div>
+                
+                }
                </div>
 
             </div>

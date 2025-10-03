@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import {Popup, Alert } from './WalletPopUps';
 import {useWalletConnect} from '../walletUtils/hooks/useConnect';
+import {connectWallet} from '../redux/wallet/walletActions';
+import {useDispatch, useSelector} from 'react-redux';
+
+
 import {
     AlertDialog,
     AlertDialogAction,
@@ -15,12 +19,16 @@ import {
 import { redirect, useNavigate } from 'react-router';
 
 const GetStarted = ({title, bgStyle, textColor}) => {
-const {account, connectWallet, isConnected} = useWalletConnect()
+const {error, isConnected} = useSelector((state) => state.wallet);
+
 const navigate = useNavigate()
+const dispatch = useDispatch()
 
 const handleConnect = () => {
-    connectWallet() 
-    navigate('/projects')
+    dispatch(connectWallet())
+    if(isConnected){
+        navigate('/projects')
+    }
     }
  
   return (
@@ -28,10 +36,10 @@ const handleConnect = () => {
         isConnected ? '' 
         :
         <AlertDialog>
-        <AlertDialogTrigger className='border-none outline-none'>
+        <AlertDialogTrigger className='border  mt-3 outline-none'>
     
-        <button className="bg-custom-gradient mt-10 px-7 py-2 rounded-full ">
-        Get Started
+        <button className="bg-custom-gradient border pr-5 pl-5 py-2">
+            Get Started
         </button>
 
         </AlertDialogTrigger>
@@ -51,12 +59,13 @@ const handleConnect = () => {
                    
                 }
             </AlertDialogAction>
+            <AlertDialogAction onClick={() => false}>Close</AlertDialogAction>
             </div>
             
         </AlertDialogFooter>
         </AlertDialogContent>
         </AlertDialog>  
-    }  
+    } 
           
     </>
     )

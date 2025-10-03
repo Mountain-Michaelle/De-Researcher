@@ -1,25 +1,23 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { ethers } from "ethers";
 import { shortenAddress } from "../../walletUtils/addressShortener";
-import { initProvider, getSigner, resetWallet } from "../../walletUtils/Wallet";
+import { initProvider } from "../../walletUtils/Wallet";
 
 // Connect wallet
 export const connectWallet = createAsyncThunk(
   "wallet/connectWallet",
   async (_, thunkAPI) => {
     if (!window.ethereum) {
-      return thunkAPI.rejectWithValue("Please install MetaMask");
+      return thunkAPI.rejectWithValue("MetaMask not installed");
     }
-
     try {
       const provider = initProvider();
       const accounts = await provider.send("eth_requestAccounts", []);
-      const signer = provider.getSigner()
       if (accounts.length > 0) {
         return {
           address: accounts[0],
           shortAddress: shortenAddress(accounts[0]),
-          isConnected:true
+          isConnected: true,
         };
       } else {
         return thunkAPI.rejectWithValue("No account found");
@@ -38,14 +36,14 @@ export const checkWalletConnection = createAsyncThunk(
       if (!window.ethereum) {
         return thunkAPI.rejectWithValue("MetaMask not installed");
       }
-      const provider = initProvider()
+      const provider = initProvider();
       const accounts = await provider.listAccounts();
 
       if (accounts.length > 0) {
         return {
           address: accounts[0],
           shortAddress: shortenAddress(accounts[0]),
-          isConnected:true,
+          isConnected: true,
         };
       } else {
         return thunkAPI.rejectWithValue("No connected account");
@@ -56,7 +54,7 @@ export const checkWalletConnection = createAsyncThunk(
   }
 );
 
-// Disconnect wallet
+// Disconnect wallet (just clears Redux state)
 export const disconnectWallet = createAsyncThunk(
   "wallet/disconnectWallet",
   async () => null

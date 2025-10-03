@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom';
 import WalletConnector from '../../../walletUtils/WalletConnector';
+import {useDispatch, useSelector} from 'react-redux';
+import {disconnectWallet} from '../../../redux/wallet/walletActions';
+import { AlertUp } from '@/walletUtils/Alert';
+
 import { Dropdown } from './DropDown';
+
 
 const Header = () => {
   const [sticky, setSticky] = useState(false);
+  const {error} = useSelector((state) => state.wallet);
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const getScrollTop = () => {
@@ -66,6 +73,16 @@ const Header = () => {
           <div className="hidden md:flex">
             <WalletConnector />
           </div>
+            {
+                  error ? 
+                  <div onClick={() => dispatch(disconnectWallet())} className='fixed z-100 left-0 top-0 w-full -mt-10 md:m-0
+                   h-full flex justify-center items-center bg-red-500/10'>
+                    <AlertUp text={error} variant="destructive"
+                     description="Please install a wallet extension to continue"/>
+                  </div>
+                  : 
+                  ''
+                } 
         </div>
       </div>  
     </header>

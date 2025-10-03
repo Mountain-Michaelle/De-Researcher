@@ -7,12 +7,16 @@ import { AlertCreateProject } from '@/walletUtils/createProject'
 import { useProjectData } from '@/walletUtils/hooks/useProjectData'
 import {useDispatch, useSelector} from "react-redux";
 import {fetchAllProjects, fetchMyProjects} from "../../../redux/projects/projectActions";
+import WalletConnector from '../../../walletUtils/WalletConnector';
+
 
 function Research() {
 
     const [openIndex, setOpenIndex] = useState(0)
     const dispatch = useDispatch();
     const  {myProjects, allProjects,  loading, error} = useSelector((state) => state.projects);
+    const {isConnected} = useSelector((state) => state.wallet)
+    
 
     useEffect(() => {
         dispatch(fetchAllProjects())
@@ -86,8 +90,16 @@ function Research() {
                 </h2>
                 <div className=' mt-5 mb-5 md:mt-20 w-fit'
                 >
+                    {
+                        isConnected ?
+                    
                     <AlertCreateProject
-                     bg={{backgroundImage: 'linear-gradient(86.03deg, #A5DEFF 3.48%, #FFFFFF 102.21%)'}} text={"Uplaod Now"}/>
+                     bg={{backgroundImage: 
+                     'linear-gradient(86.03deg, #A5DEFF 3.48%, #FFFFFF 102.21%)'}} text={"Uplaod Now"}/>
+                     :
+
+                     <WalletConnector text="" />
+                    }
                 </div>    
 
             </div>

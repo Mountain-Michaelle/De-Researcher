@@ -40,7 +40,7 @@ const walletSlice = createSlice({
             state.loading = false;
             state.status = "failed";
             state.error = action.payload;
-            state.isConnected = action.payload.isConnected;
+            state.isConnected = action.payload?.isConnected;
         })
 
         // Wallet connection check
