@@ -45,6 +45,9 @@ const Header = () => {
   return () => window.removeEventListener("scroll", handleStickyNavbar);
 }, []);
 
+useEffect(() => {
+    document.body.style.overflow = error ? "hidden" : "auto";
+  }, [error]);
   console.log(sticky, "Sticky")
 
   return (
@@ -76,7 +79,7 @@ const Header = () => {
             {
                   error ? 
                   <div onClick={() => dispatch(disconnectWallet())} className='fixed inset-0 z-100 left-0 top-0 w-full -mt-10 md:m-0
-                   h-full flex justify-center items-center bg-red-500/10'>
+                   h-[100%] flex flex-1 justify-center items-center bg-red-500/10'>
                     <AlertUp 
                     text={error.toLowerCase().includes("wallet_requestpermissions") ?
                        'Request already pending for this origin' : error} variant="destructive"
