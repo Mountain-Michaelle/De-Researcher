@@ -5,7 +5,7 @@ import { connectWallet } from './walletUtils/Wallet';
 import './App.css';
 import Layout from './Layout';
 import LandingPage2 from './app/pages/LandingPage2';
-import Projects from './components/LandingPage2Comp/Projects/Projects';
+import Projects from './components/LandingPage2Comp/Projects/projects';
 import { Route, Routes } from 'react-router';
 import LandingPage1 from './app/pages/LandingPage1';
 import ProjectUpload from './components/LandingPage1Comp/Research/ProjectUpload';

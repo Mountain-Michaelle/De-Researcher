@@ -4,7 +4,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import {disconnectWallet} from '../../redux/wallet/walletActions';
 import {tokenData} from './tokenData'
 import GetStarted from '@/walletUtils/GetStarted'
-import { AlertUp } from '@/walletUtils/Alert';
+
+
 function Hero() {
     const {error} = useSelector((state) => state.wallet);
     const dispatch = useDispatch()

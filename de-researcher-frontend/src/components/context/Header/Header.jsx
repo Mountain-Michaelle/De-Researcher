@@ -47,8 +47,7 @@ const Header = () => {
 
 useEffect(() => {
     document.body.style.overflow = error ? "hidden" : "auto";
-  }, [error]);
-  console.log(sticky, "Sticky")
+  }, [dispatch]);
 
   return (
     <header
@@ -79,7 +78,7 @@ useEffect(() => {
             {
                   error ? 
                   <div onClick={() => dispatch(disconnectWallet())} className='fixed inset-0 z-100 left-0 top-0 w-full -mt-10 md:m-0
-                   h-[100%] flex flex-1 justify-center items-center bg-red-500/10'>
+                   h-[100%] flex flex-1 justify-center items-center bg-red-500/5'>
                     <AlertUp 
                     text={error.toLowerCase().includes("wallet_requestpermissions") ?
                        'Request already pending for this origin' : error} variant="destructive"

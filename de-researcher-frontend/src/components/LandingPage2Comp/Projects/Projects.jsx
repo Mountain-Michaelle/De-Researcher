@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import ProjectExpiryTime from './ProjectExpiryTime'
+import countDown from './countDown';
 import { Link } from 'react-router'
 const Projects = () => {
   
@@ -161,7 +161,7 @@ const Projects = () => {
        </section>
 
        <section className='w-full mt-10'>
-        <ProjectExpiryTime numOfdays={30} />
+        <countDown numOfdays={30} />
        </section>
        
 

@@ -24,7 +24,7 @@ const Layout = ({children}) => {
 
   return (
   <ThemeProvider attribute="class">
-    <div className="w-[100%] h-[100vh] overflow-auto bg-gradient-to-b from-[#0E1526] via-[#162B54] to-[#0E1526] relative"
+    <div className="w-[100%] h-[100vh]  overflow-auto bg-gradient-to-b from-[#0E1526] via-[#162B54] to-[#0E1526] relative"
     style={{msOverflowStyle:"none", scrollbarWidth:"none"}}
     >
     {/** background bobs */}

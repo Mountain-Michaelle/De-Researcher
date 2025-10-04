@@ -5,7 +5,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {connectWallet, checkWalletConnection} from '../redux/wallet/walletActions';
 
 const WalletConnector = ({title, bgStyle, textColor}) => {
-const {account, handleCancel} = useWalletConnect()
+const {handleCancel} = useWalletConnect()
 const dispatch = useDispatch()
 const {shortAddress, isConnected, loading, error} = useSelector((state) => state.wallet);
 

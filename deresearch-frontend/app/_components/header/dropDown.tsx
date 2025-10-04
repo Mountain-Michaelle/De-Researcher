@@ -8,12 +8,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
-import WalletConnector from "@/walletUtils/WalletConnector"
+
+import WalletConnector from "../walletConnector"
 import {FolderDot, CircleHelp, AlignRight, ChartNoAxesGantt } from "lucide-react"
 import { useState } from "react"
-import { Link } from "react-router"
+import Link from 'next/link';
 
-export const Dropdown = ({account}) => {
+export const Dropdown = () => {
     const [isHovered, setIsHovered] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
 
@@ -49,7 +50,7 @@ export const Dropdown = ({account}) => {
   <DropdownMenuContent className="bg-custom-gradient text-white opacity-1 md:hidden mr-5 mt-2">
     <DropdownMenuLabel className="w-fit h-fit"><WalletConnector /></DropdownMenuLabel>
     <DropdownMenuSeparator />
-    <Link className="bg-inherit " to="/projects" ><DropdownMenuItem><FolderDot /> Projects</DropdownMenuItem></Link>
+    <Link className="bg-inherit " href="/projects" ><DropdownMenuItem><FolderDot /> Projects</DropdownMenuItem></Link>
     <DropdownMenuItem><CircleHelp /> How it works </DropdownMenuItem>
     <DropdownMenuItem>Team</DropdownMenuItem>
     <DropdownMenuItem>Subscription</DropdownMenuItem>
