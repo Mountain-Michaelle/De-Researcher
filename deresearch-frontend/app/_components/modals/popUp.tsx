@@ -90,7 +90,7 @@ export const Alert: React.FC<AlertProps> = ({ account, handleCancel, text }) => 
   return (
     <AlertDialog>
       <AlertDialogTrigger>
-        <button
+        <div
           className="bg-custom-gradient w-fit md:w-[180px] text-center p-3 md:p-2 rounded-full text-[18px] 
           overflow-hidden text-white relative"
         >
@@ -102,7 +102,7 @@ export const Alert: React.FC<AlertProps> = ({ account, handleCancel, text }) => 
             />
           </div>
           <div className="ml-12 md:ml-8">{account}</div>
-        </button>
+        </div>
       </AlertDialogTrigger>
 
       <AlertDialogContent className="bg-custom-gradient">

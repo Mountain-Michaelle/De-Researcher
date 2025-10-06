@@ -4,6 +4,19 @@ export interface topicData {
   readonly id: number;
 }
 
+export interface SubTopic {
+  title: string;
+  author: string;
+  date: string;
+  ttc: string; // total token committed
+  tp: string;  // total participants
+  milestone: string;
+}
+
+export interface Topic {
+  title: string;
+  subData?: SubTopic[]; // optional, since some topics have none
+}
 export const topicHeader: readonly topicData[] = [
     {
         title: 'Latest Projects',
@@ -19,20 +32,6 @@ export const topicHeader: readonly topicData[] = [
     },
 ]
 
-
-export interface SubTopic {
-  title: string;
-  author: string;
-  date: string;
-  ttc: string; // total token committed
-  tp: string;  // total participants
-  milestone: string;
-}
-
-export interface Topic {
-  title: string;
-  subData?: SubTopic[]; // optional, since some topics have none
-}
 
 export const topicData: Topic[] = [
   {

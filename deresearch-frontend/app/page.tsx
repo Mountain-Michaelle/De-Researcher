@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image";
 import Hero from "@/app/_components/hero/hero";
 import Featured from "@/app/_components/featured";

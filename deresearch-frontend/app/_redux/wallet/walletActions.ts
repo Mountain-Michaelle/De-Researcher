@@ -1,25 +1,33 @@
-import { shortenAddress } from '../../_lib/addresShortener';
+import { shortenAddress } from "../../_lib/addresShortener";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { ethers } from "ethers";
 import { initProvider } from "../../_lib/utils/wallet";
+import { ethers } from "ethers";
 
-// 🧠 1. Define wallet data shape
 export interface WalletInfo {
   address: string;
   shortAddress: string;
   isConnected: boolean;
 }
 
-// 🧱 2. Define reject value type
-interface RejectValue {
+export interface SerializedError {
+  name: string;
   message: string;
+  stack?: string;
+  code?: string | null;
 }
 
-// 🪙 3. Connect wallet
+const serializeError = (error: any): SerializedError => ({
+  name: error?.name || "Error",
+  message: error?.message || "Unknown error",
+  stack: error?.stack,
+  code: error?.code || null,
+});
+
+// 🪙 4. Connect wallet
 export const connectWallet = createAsyncThunk<
-  WalletInfo, // return type when fulfilled
-  void,       // argument type (none)
-  { rejectValue: string } // reject value type
+  WalletInfo,
+  void,
+  { rejectValue: string | SerializedError }
 >(
   "wallet/connectWallet",
   async (_, thunkAPI) => {
@@ -43,16 +51,16 @@ export const connectWallet = createAsyncThunk<
         isConnected: true,
       };
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error?.message ?? "Failed to connect wallet");
+      return thunkAPI.rejectWithValue(serializeError(error));
     }
   }
 );
 
-// 🔄 4. Check wallet connection on refresh
+// 🔄 5. Check wallet connection on refresh
 export const checkWalletConnection = createAsyncThunk<
   WalletInfo,
   void,
-  { rejectValue: string }
+  { rejectValue: string | SerializedError }
 >(
   "wallet/checkWalletConnection",
   async (_, thunkAPI) => {
@@ -63,8 +71,8 @@ export const checkWalletConnection = createAsyncThunk<
     try {
       const provider = initProvider();
       if (!provider) throw new Error("Provider initialization failed");
-        const signers = await provider.listAccounts(); // type: JsonRpcSigner[]
-    //   const accounts: string[] = await provider.listAccounts();
+
+      const signers = await provider.listAccounts();
       if (signers.length === 0) {
         return thunkAPI.rejectWithValue("No connected account");
       }
@@ -76,12 +84,12 @@ export const checkWalletConnection = createAsyncThunk<
         isConnected: true,
       };
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error?.message ?? "Failed to check connection");
+      return thunkAPI.rejectWithValue(serializeError(error));
     }
   }
 );
 
-// 🔌 5. Disconnect wallet (just clears Redux state)
+// 🔌 6. Disconnect wallet (just clears Redux state)
 export const disconnectWallet = createAsyncThunk<null, void>(
   "wallet/disconnectWallet",
   async () => null

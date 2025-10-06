@@ -1,16 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef} from "react";
-import { shortenAddress } from "../../../../_lib/addresShortener";
+import React, { useEffect, useState, useCallback } from "react";
+import { shortenAddress } from "../../_lib/addresShortener";
 import { Button } from "@/components/ui/button";
-import { CreateProjectMileStone } from "../../../../_components/research/createProjectMilestone";
+import { CreateProjectMileStone } from "./createProjectMilestone";
 import { useParams } from "next/navigation";
 import { ethers } from "ethers";
-import { connectWallet } from "../../../../_lib/utils/wallet";
-import ResearchProjectABI from "../../../../truffle_abis/ResearchProject.json";
-import { BigNumber } from "@ethersproject/bignumber";
-import {ChevronsLeft} from 'lucide-react';
-import { formatEth } from "@/app/_lib/utils/weiConverter";
+import { connectWallet } from "../../_lib/utils/wallet";
+import ResearchProjectABI from "../../truffle_abis/ResearchProject.json";
 
 // --------------------
 // 🔹 Type Definitions
@@ -67,11 +64,11 @@ const ResearchDetails: React.FC = () => {
         id: idx,
         title: m[0],
         description: m[1],
-        amount: ethers.formatEther(BigNumber.from(m[2]).toString()),
-        deadline: BigNumber.from(m[3]).toString(),
+        amount: ethers.BigNumber.from(m[2]).toString(),
+        deadline: ethers.BigNumber.from(m[3]).toString(),
         isCompleted: m[4],
         recipient: m[5],
-        progress: BigNumber.from(m[6]).toString(),
+        progress: ethers.BigNumber.from(m[6]).toString(),
         hash: m[7],
       }));
 
@@ -82,11 +79,9 @@ const ResearchDetails: React.FC = () => {
     }
   }, []);
 
-function capitalizeFirst(str:string) {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
+  // --------------------
+  // 🧩 Fetch project details
+  // --------------------
   const getProjectDetail = useCallback(async (projectId: string) => {
     try {
       setIsLoading(true);
@@ -112,7 +107,9 @@ function capitalizeFirst(str:string) {
     }
   }, []);
 
- 
+  // --------------------
+  // 🧩 Effects
+  // --------------------
   useEffect(() => {
     if (id) {
       getProjectDetail(id);
@@ -120,8 +117,10 @@ function capitalizeFirst(str:string) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [id, getProjectDetail, getMilestones]);
-  const milestoneListRef = useRef<HTMLDivElement | null>(null);
 
+  // --------------------
+  // 🧩 Render
+  // --------------------
   return (
     <div className="min-h-screen w-full bg-gray-900 text-white relative">
       {isLoading && (
@@ -151,7 +150,7 @@ function capitalizeFirst(str:string) {
 
             <div className="grid grid-cols-2 gap-4 mt-6">
               <div>
-               <p className="text-gray-400">Total Tokens Committed</p>
+                <p className="text-gray-400">Total Tokens Committed</p>
                 <p className="text-xl font-semibold">{projectDetails.stake || "0"} Wei</p>
               </div>
               <div>
@@ -179,31 +178,27 @@ function capitalizeFirst(str:string) {
               <p className="text-sm break-all bg-gray-700 p-2 rounded">
                 {shortenAddress(projectDetails.recipient, 10)}
               </p>
-            <div ref={milestoneListRef} className="m-0 p-0" id="milestone-list"></div>
-
             </div>
 
             <Button
-              className="mt-6 w-fit bg-custom-gradient hover:bg-blue-600 text-white py-2 rounded-lg transition"
+              className="mt-6 w-full bg-custom-gradient hover:bg-blue-600 text-white py-2 rounded-lg transition"
               onClick={() => window.history.back()}
             >
-              <ChevronsLeft />
               Go Back
             </Button>
 
             {/* Milestones Section */}
             <div className="mt-16">
-               <div ref={milestoneListRef} id="milestone-list"></div>
-              <h2 className="text-3xl md:text-4xl font-semibold text-blue-400 mb-4">MILESTONES</h2>
+              <h2 className="text-2xl font-semibold text-blue-400 mb-4">Milestones</h2>
               {milestones.length > 0 ? (
-                <div className="space-y-4 flex flex-wrap gap-5">
-                  {[...milestones].reverse().map((m) => (
-                    <div key={m.id} className="bg-gray-700 max-w-[80%] relative p-4 rounded-lg">
-                      <h3 className="text-blue-200 font-bold mt-3 text-xl">{capitalizeFirst(m.title.toLowerCase())}</h3>
-                      <p className="text-gray-300 ml-2">{m.description}</p>
-                      <p className="text-sm ml-2">Amount: {m.amount} ETH</p>
+                <div className="space-y-4">
+                  {milestones.map((m) => (
+                    <div key={m.id} className="bg-gray-700 p-4 rounded-lg">
+                      <h3 className="text-blue-400 font-semibold">{m.title}</h3>
+                      <p className="text-gray-300">{m.description}</p>
+                      <p className="text-sm">Amount: {m.amount} ETH</p>
                       <p
-                        className={`text-sm absolute top-0 right-3 mt-4 ${
+                        className={`text-sm ${
                           m.isCompleted ? "text-green-400" : "text-yellow-400"
                         }`}
                       >

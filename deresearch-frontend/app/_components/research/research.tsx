@@ -38,6 +38,7 @@ const Research: React.FC = () => {
 
   return (
     <div id="projects" className="w-full mt-32 py-16 bg-[#0b1a2b]">
+      <div className="m-0 p-0" id="project-view"></div>
       {/* Section Title */}
       <h2 className="text-white font-semibold text-left md:text-[200%] text-2xl ml-6 mb-5">
         Latest Research Projects
@@ -53,7 +54,7 @@ const Research: React.FC = () => {
             key={item.id}
             onClick={() => handleSubData(index)}
             className="flex flex-col justify-between items-center h-[42px] cursor-pointer"
-          >
+          > 
             <span className="text-white text-[12px] rounded-full p-2">
               {item.title}
             </span>

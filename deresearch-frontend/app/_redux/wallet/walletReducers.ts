@@ -64,7 +64,7 @@ const walletSlice = createSlice({
 
       // Check wallet connection
       .addCase(checkWalletConnection.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
       })
       .addCase(checkWalletConnection.fulfilled, (state, action) => {
         state.loading = false;

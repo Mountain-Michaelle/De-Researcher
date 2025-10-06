@@ -1,8 +1,9 @@
-"use client"
+"use client";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { ethers } from "ethers";
-import { BigNumber } from "@ethersproject/bignumber";
 import { connectWallet } from "@/app/_lib/utils/wallet";
+import { serializeBigNumbers } from "@/app/_lib/utils/serializeBigNumbers";
+
+
 
 export interface Project {
   title: string;
@@ -16,93 +17,122 @@ export interface Project {
   metadata?: string;
   investor?: string;
   contributors?: string;
-  data?:string;
+  data?: string;
 }
 
-
-
 interface WalletConnection {
-  contractInstance: any; 
+  contractInstance: any;
   address: string;
 }
 
+interface SerializedError {
+  name: string;
+  message: string;
+  stack?: string;
+  code?: string | null;
+}
 
 
-// Fetch projects created by current user
-export const fetchMyProjects = createAsyncThunk<Project[], void, { rejectValue: string }>(
-  "projects/fetchMyProjects",
-  async (_, thunkAPI) => {
-    try {
-      const { contractInstance, address }: WalletConnection = await connectWallet();
-      const proj = await contractInstance.getProjectsByCreator(address);
+export const fetchMyProjects = createAsyncThunk<
+  Project[],
+  void,
+  { rejectValue: SerializedError }
+>("projects/fetchMyProjects", async (_, thunkAPI) => {
+  try {
+    const { contractInstance, address }: WalletConnection = await connectWallet();
+    const proj = await contractInstance.getProjectsByCreator(address);
 
-      if (!Array.isArray(proj) || proj.length === 0) return [];
+    if (!Array.isArray(proj) || proj.length === 0) return [];
 
-      const formattedData: Project[] = proj.map((entry: any) => ({
-        title: entry[0],
-        description: entry[1],
-        amount: parseInt(entry[2]?.hex ?? "0", 16),
-        creator: entry[3],
-        stake: BigNumber.from(entry[2]).toString(),
-        transactionHash: entry[4],
-        recipient: entry[5],
-        projectId: BigNumber.from(entry[6]).toString(),
-        metadata: entry[6],
-      }));
+    const formattedData: Project[] = proj.map((entry: any) => {
+      const safeEntry = serializeBigNumbers(entry);
 
-      return formattedData;
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error?.message ?? "Failed to fetch my projects");
-    }
+      return {
+        title: safeEntry[0],
+        description: safeEntry[1],
+        amount: Number(safeEntry[2] || 0),
+        creator: safeEntry[3],
+        stake: safeEntry[2]?.toString(),
+        transactionHash: safeEntry[4],
+        recipient: safeEntry[5],
+        projectId: safeEntry[6]?.toString(),
+        metadata: safeEntry[6]?.toString(),
+      };
+    });
+
+    return formattedData;
+  } catch (error: any) {
+    const serializedError: SerializedError = {
+      name: error.name || "FetchMyProjectsError",
+      message: error.message || "Failed to fetch projects",
+      stack: error.stack,
+      code: error.code || null,
+    };
+    return thunkAPI.rejectWithValue(serializedError);
   }
-);
+});
 
-//Fetch all projects
-export const fetchAllProjects = createAsyncThunk<Project[], void, { rejectValue: string }>(
-  "projects/fetchAllProjects",
-  async (_, thunkAPI) => {
-    try {
-      const { contractInstance }: WalletConnection = await connectWallet();
-      const proj = await contractInstance.getAllProjects();
 
-      if (!proj || !Array.isArray(proj[0]) || proj[0].length === 0) return [];
 
-      const cleanData: Project[] = proj[0].map((item: any) => ({
-        title: item[0],
-        description: item[1],
-        stake: BigNumber.from(item[2] ?? 0).toString(),
-        creator: item[3],
-        contributors: item[4],
-        investor: item[5],
-        projectId: BigNumber.from(item[6] ?? 0).toString(),
-      }));
+export const fetchAllProjects = createAsyncThunk<
+  Project[],
+  void,
+  { rejectValue: SerializedError }
+>("projects/fetchAllProjects", async (_, thunkAPI) => {
+  try {
+    const { contractInstance }: WalletConnection = await connectWallet();
+    const proj = await contractInstance.getAllProjects();
 
-      // Return last 4 projects, reversed
-      return cleanData.slice(-4).reverse();
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error?.message ?? "Failed to fetch all projects");
-    }
+    if (!proj || !Array.isArray(proj[0]) || proj[0].length === 0) return [];
+
+    const cleanData: Project[] = proj[0].map((item: any) => {
+      const safeItem = serializeBigNumbers(item);
+
+      return {
+        title: safeItem[0],
+        description: safeItem[1],
+        stake: safeItem[2]?.toString(),
+        creator: safeItem[3],
+        contributors: safeItem[4],
+        investor: safeItem[5],
+        projectId: safeItem[6]?.toString(),
+      };
+    });
+
+    return cleanData.slice(-4).reverse();
+  } catch (error: any) {
+    const serializedError: SerializedError = {
+      name: error.name || "FetchAllProjectsError",
+      message: error.message || "Failed to fetch all projects",
+      stack: error.stack,
+      code: error.code || null,
+    };
+    return thunkAPI.rejectWithValue(serializedError);
   }
-);
+});
 
-// Create new project
+
+
 export const createProject = createAsyncThunk<
-  void, // Return type
-  { title: string; description: string; stake: string }, // Args type
-  { rejectValue: string }
->(
-  "projects/createProject",
-  async ({ title, description, stake }, thunkAPI) => {
-    try {
-      const { contractInstance }: WalletConnection = await connectWallet();
-      const tx = await contractInstance.createResearchProject(title, description, stake);
-      await tx.wait();
+  void,
+  { title: string; description: string; stake: string },
+  { rejectValue: SerializedError }
+>("projects/createProject", async ({ title, description, stake }, thunkAPI) => {
+  try {
+    const { contractInstance }: WalletConnection = await connectWallet();
+    const tx = await contractInstance.createResearchProject(title, description, stake);
+    await tx.wait();
 
-      // Re-fetch data after success
-      thunkAPI.dispatch(fetchMyProjects());
-      thunkAPI.dispatch(fetchAllProjects());
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error?.message ?? "Failed to create project");
-    }
+    // Refresh data after creation
+    thunkAPI.dispatch(fetchMyProjects());
+    thunkAPI.dispatch(fetchAllProjects());
+  } catch (error: any) {
+    const serializedError: SerializedError = {
+      name: error.name || "CreateProjectError",
+      message: error.message || "Failed to create project",
+      stack: error.stack,
+      code: error.code || null,
+    };
+    return thunkAPI.rejectWithValue(serializedError);
   }
-);
+});

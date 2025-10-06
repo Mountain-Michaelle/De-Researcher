@@ -82,11 +82,18 @@ export const connectWallet = async (): Promise<WalletConnection> => {
 let provider: ethers.BrowserProvider | null = null;
 let signer: ethers.Signer | null = null;
 
-export function initProvider(): ethers.BrowserProvider | null {
-  if (typeof window === "undefined" || !window.ethereum) return null;
-  if (!provider) provider = new ethers.BrowserProvider(window.ethereum);
-  return provider;
-}
+// export function initProvider(): ethers.BrowserProvider | null {
+//   if (typeof window === "undefined" || !window.ethereum) return null;
+//   if (!provider) provider = new ethers.BrowserProvider(window.ethereum);
+//   return provider;
+// }
+
+export const initProvider = (): ethers.BrowserProvider | null => {
+  if (typeof window !== "undefined" && (window as any).ethereum) {
+    return new ethers.BrowserProvider((window as any).ethereum);
+  }
+  return null;
+};
 
 export function getProvider(): ethers.BrowserProvider | null {
   return provider || initProvider();

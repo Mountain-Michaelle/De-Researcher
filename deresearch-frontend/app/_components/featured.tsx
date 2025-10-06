@@ -57,7 +57,7 @@ const Featured: React.FC = () => {
                   "linear-gradient(177.42deg, rgba(255, 255, 255, 0.05) 2.32%, rgba(255, 255, 255, 0) 98.02%)",
               }}
             >
-              <h3 className="text-lg font-bold bg-blue-500 text-blue-500 text-center w-fit p-2 rounded-md">
+              <h3 className="text-lg font-bold bg-blue-500 text-gray-100 text-center w-fit p-2 rounded-md">
                 {item.step}
               </h3>
               <h4 className="mt-4 text-xl text-white font-semibold">{item.title}</h4>

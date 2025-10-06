@@ -1,5 +1,4 @@
-'use client';
-
+"use client"
 import React, { useEffect, useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 
@@ -62,8 +61,8 @@ const CountDown: React.FC<ProjectExpiryTimeProps> = ({ numOfdays }) => {
       {timeLeft.total > 0 ? (
         <div className="flex items-center justify-start space-x-4 text-center text-sm">
           <div className="flex flex-col">
-            <span className="text-xl font-bold">{timeLeft.days}</span>
-            <span>Days</span>
+            <div className="text-xl font-bold">{timeLeft?.days}</div>
+            <div>Days</div>
           </div>
           <Separator orientation="vertical" />
           <div className="flex flex-col">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,7 +40,7 @@ interface AlertCreateProjectProps {
 export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, success, error } = useSelector((state: RootState) => state.projects);
-
+  const [open, setOpen] = useState(false)
   //
   // ✅ Toast handling
   //
@@ -97,6 +97,13 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
         })
       );
       resetForm();
+
+      setOpen(false)
+
+      setTimeout(() => {
+        document.getElementById("project-view")?.scrollIntoView({ behavior: "smooth" });
+        // router.push("#milestone-list");
+      }, 300);
     },
   });
 
@@ -104,7 +111,7 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
   // 🧱 Render
   //
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <button
           style={bg}
@@ -171,7 +178,7 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
                 {/* Stake */}
                 <div className="mb-3">
                   <Label htmlFor="stake-input" className="block text-left text-white mb-2 text-sm font-medium">
-                    Stake
+                    Stake/ETH
                   </Label>
                   <Input
                     id="stake-input"
@@ -204,7 +211,7 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
         </AlertDialogHeader>
 
         <AlertDialogFooter className="flex items-center gap-3 m-0">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={()=>setOpen(false)}>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

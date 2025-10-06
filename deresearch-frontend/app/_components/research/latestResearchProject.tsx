@@ -4,8 +4,7 @@ import Image from 'next/image';
 import React from 'react';
 import { topicData } from '@/app/_data/latestResearchTopic';
 import WalletConnector from '../walletConnector';
-
-/**
+import { Topic } from '@/app/_data/topicData';/**
  * A section displaying recent research projects and a wallet connection CTA.
  */
 const LatestResearchProject: React.FC = () => {
