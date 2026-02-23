@@ -63,7 +63,16 @@ export const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   }
 
   if (!files.length) {
-    return <p className="text-gray-400 mt-6">No files uploaded yet.</p>;
+    return (
+      <div className="mt-6">
+        <span className="inline-flex items-center rounded-full bg-blue-500/15 px-3 py-1 text-xs font-medium text-blue-300 border border-blue-400/30">
+          0G storage integrated
+        </span>
+        <p className="text-gray-400 mt-2 text-sm">
+          No project files available yet.
+        </p>
+      </div>
+    );
   }
 
   const documents = files.filter((file) => file.fieldType === "document");
@@ -72,6 +81,11 @@ export const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
   return (
     <div className="mt-8">
       <h3 className="text-2xl font-semibold text-blue-300 mb-4">Files</h3>
+      {!gatewayBase && (
+        <p className="text-xs text-yellow-300 mb-4">
+          `NEXT_PUBLIC_0G_GATEWAY` is not set. URLs may not be directly downloadable.
+        </p>
+      )}
       {documents.length > 0 && (
         <div className="mb-6">
           <h4 className="text-lg font-medium text-blue-200 mb-3">Documents</h4>
@@ -90,14 +104,23 @@ export const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
                     rootHash: {file.rootHash}
                   </p>
                 </div>
-                <a
-                  className="text-sm text-blue-300 underline self-center"
-                  href={resolveFileUrl(file.rootHash)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open
-                </a>
+                <div className="flex gap-3 items-center">
+                  <a
+                    className="text-sm text-blue-300 underline"
+                    href={resolveFileUrl(file.rootHash)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View
+                  </a>
+                  <a
+                    className="text-sm text-green-300 underline"
+                    href={resolveFileUrl(file.rootHash)}
+                    download={file.fileName}
+                  >
+                    Download
+                  </a>
+                </div>
               </div>
             ))}
           </div>
@@ -115,6 +138,23 @@ export const ProjectFiles: React.FC<ProjectFilesProps> = ({ projectId }) => {
                   className="h-36 w-full object-cover rounded"
                 />
                 <p className="font-semibold text-white break-all mt-2">{file.fileName}</p>
+                <div className="flex gap-3 mt-2">
+                  <a
+                    className="text-sm text-blue-300 underline"
+                    href={resolveFileUrl(file.rootHash)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open
+                  </a>
+                  <a
+                    className="text-sm text-green-300 underline"
+                    href={resolveFileUrl(file.rootHash)}
+                    download={file.fileName}
+                  >
+                    Download
+                  </a>
+                </div>
               </div>
             ))}
           </div>

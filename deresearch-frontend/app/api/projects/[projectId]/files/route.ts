@@ -4,6 +4,7 @@ import { listProjectFiles, saveProjectFileMetadata } from "@/lib/storage/project
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 const RATE_LIMIT_MAX = 50;
 const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+const DEBUG_API = process.env.DEBUG_API === "true";
 
 const getClientIp = (request: NextRequest): string => {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -25,11 +26,19 @@ const checkRateLimit = (ip: string): boolean => {
   return true;
 };
 
+const debugLog = (message: string, meta?: Record<string, unknown>) => {
+  if (!DEBUG_API) return;
+  console.info(`[api/projects/:projectId/files] ${message}`, meta ?? {});
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   const ip = getClientIp(request);
+  const { projectId } = await params;
+  debugLog("get_request_received", { ip, projectId });
+
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -37,17 +46,20 @@ export async function GET(
     );
   }
 
-  const projectId = params.projectId;
   const files = listProjectFiles(projectId);
+  debugLog("get_success", { projectId, count: files.length });
 
   return NextResponse.json({ files }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   const ip = getClientIp(request);
+  const { projectId } = await params;
+  debugLog("post_request_received", { ip, projectId });
+
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -55,7 +67,6 @@ export async function POST(
     );
   }
 
-  const projectId = params.projectId;
   const body = (await request.json()) as {
     files?: Array<{
       rootHash?: string;
@@ -73,6 +84,12 @@ export async function POST(
   }
 
   const uploadedBy = body.uploadedBy || "unknown";
+  debugLog("post_payload_validated", {
+    projectId,
+    uploadedBy,
+    fileCount: body.files.length,
+  });
+
   const created = body.files.map((file) =>
     saveProjectFileMetadata({
       projectId,
@@ -94,5 +111,6 @@ export async function POST(
     );
   }
 
+  debugLog("post_success", { projectId, createdCount: created.length });
   return NextResponse.json({ files: created }, { status: 201 });
 }

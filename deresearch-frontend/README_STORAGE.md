@@ -43,30 +43,51 @@ Example response shape:
 }
 ```
 
-## Flow (How Routes Interact)
+## Flow (How Routes + Detail View Interact)
 
 ```text
-User creates project on-chain -> gets projectId
-        |
-        v
-POST /api/upload
-  - validates file
-  - uploads file to 0G
-  - returns rootHash + txHash
-        |
-        v
-POST /api/projects/{projectId}/files
-  - stores metadata linked to projectId + fieldType
-        |
-        v
-GET /api/projects/{projectId}/files
-  - returns metadata so UI can render files
+┌──────────────────────────────┐
+│ 1) User creates project      │
+│    (Solidity / ethers.js)    │
+└──────────────┬───────────────┘
+               │ returns projectId
+               v
+┌──────────────────────────────┐
+│ 2) POST /api/upload          │
+│    - validate type + size    │
+│    - upload bytes to 0G      │
+│    - get rootHash + txHash   │
+└──────────────┬───────────────┘
+               │ upload result
+               v
+┌──────────────────────────────┐
+│ 3) POST /api/projects/{id}/files
+│    - store metadata only     │
+│    - link to projectId       │
+│    - fieldType=document|thumb│
+└──────────────┬───────────────┘
+               │
+               v
+┌──────────────────────────────┐
+│ 4) Detail page loads         │
+│    GET /api/projects/{id}/files
+└──────────────┬───────────────┘
+               │
+    ┌──────────┴──────────┐
+    │                     │
+    v                     v
+Files exist          No files yet
+render docs +        show badge:
+thumbnail preview    "0G storage integrated"
+and download links   + "No project files available yet."
 ```
 
 ## Routes in This Project
 
 - `POST /api/upload`
-  - receives multipart file
+  - receives multipart file in exactly one field:
+    - `document` (`.pdf`, `.doc`, `.docx`)
+    - `thumbnail` (`.png`, `.jpg`, `.jpeg`)
   - sends file to 0G through server upload service
   - returns `rootHash`, `txHash`, and file info
 
@@ -75,6 +96,78 @@ GET /api/projects/{projectId}/files
 
 - `GET /api/projects/{projectId}/files`
   - fetches all metadata for project details page
+
+## Detail View Behavior
+
+- If files are present:
+  - Documents show `View` and `Download`.
+  - Thumbnails show image preview plus `Open` and `Download`.
+- If files are not present:
+  - UI does not show empty file cards.
+  - UI shows an integration status badge:
+    - `0G storage integrated`
+
+## How To Test (Manual API Check)
+
+1. Set env and restart dev server:
+```env
+DEBUG_API=true
+```
+
+2. Upload a document:
+```powershell
+$doc = Invoke-RestMethod -Method Post -Uri "http://localhost:3000/api/upload" -Form @{
+  document = Get-Item "C:\path\proposal.pdf"
+}
+$doc | ConvertTo-Json -Depth 5
+```
+
+3. Upload a thumbnail:
+```powershell
+$thumb = Invoke-RestMethod -Method Post -Uri "http://localhost:3000/api/upload" -Form @{
+  thumbnail = Get-Item "C:\path\thumb.jpg"
+}
+$thumb | ConvertTo-Json -Depth 5
+```
+
+4. Save metadata to a project:
+```powershell
+$projectId = 9
+$payload = @{
+  uploadedBy = "0xYourWalletAddress"
+  files = @(
+    @{
+      rootHash  = $doc.rootHash
+      txHash    = $doc.txHash
+      fileName  = $doc.fileName
+      size      = $doc.size
+      type      = $doc.type
+      fieldType = "document"
+    },
+    @{
+      rootHash  = $thumb.rootHash
+      txHash    = $thumb.txHash
+      fileName  = $thumb.fileName
+      size      = $thumb.size
+      type      = $thumb.type
+      fieldType = "thumbnail"
+    }
+  )
+} | ConvertTo-Json -Depth 8
+
+Invoke-RestMethod -Method Post -Uri "http://localhost:3000/api/projects/$projectId/files" -ContentType "application/json" -Body $payload
+```
+
+5. Fetch and confirm:
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://localhost:3000/api/projects/$projectId/files" | ConvertTo-Json -Depth 10
+```
+
+6. Check terminal logs (because `DEBUG_API=true`):
+- `[api/upload] file_validated`
+- `[api/upload] upload_success`
+- `[api/projects/:projectId/files] post_success`
+- `[api/projects/:projectId/files] get_success`
 
 ## Required Environment Variables
 

@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import type { ProjectFile } from "@/types/project-file";
-import { uploadFile } from "@/lib/storage/storage.service";
+import { uploadFile, type UploadFieldType } from "@/lib/storage/storage.service";
 
-export type UploadFieldType = "document" | "thumbnail";
 
 interface UploadState {
   loading: boolean;
@@ -39,7 +38,7 @@ export const useProjectUpload = (defaults?: UploadOptions) => {
       }
 
       setState((prev) => ({ ...prev, progress: 20 }));
-      const uploadResult = await uploadFile(file);
+      const uploadResult = await uploadFile(file, fieldType);
       setState((prev) => ({ ...prev, progress: 75 }));
 
       const response = await fetch(`/api/projects/${context.projectId}/files`, {

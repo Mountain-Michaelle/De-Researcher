@@ -1,5 +1,7 @@
 "use client";
 
+export type UploadFieldType = "document" | "thumbnail";
+
 export interface UploadResult {
   rootHash: string;
   txHash?: string;
@@ -9,9 +11,12 @@ export interface UploadResult {
   fileName: string;
 }
 
-export const uploadFile = async (file: File): Promise<UploadResult> => {
+export const uploadFile = async (
+  file: File,
+  fieldType: UploadFieldType
+): Promise<UploadResult> => {
   const formData = new FormData();
-  formData.append("file", file, file.name);
+  formData.append(fieldType, file, file.name);
 
   const response = await fetch("/api/upload", {
     method: "POST",

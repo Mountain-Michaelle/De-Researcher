@@ -4,11 +4,15 @@ import { sanitizeFileName } from "@/lib/storage/storage.utils";
 
 const MAX_UPLOAD_MB = Number(process.env.MAX_UPLOAD_MB ?? 10);
 const MAX_UPLOAD_BYTES = Math.max(MAX_UPLOAD_MB, 1) * 1024 * 1024;
+const DEBUG_API = process.env.DEBUG_API === "true";
 
-const ALLOWED_MIME_TYPES = new Set([
+const DOCUMENT_MIME_TYPES = new Set([
   "application/pdf",
   "application/msword",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+
+const THUMBNAIL_MIME_TYPES = new Set([
   "image/png",
   "image/jpeg",
 ]);
@@ -37,8 +41,15 @@ const checkRateLimit = (ip: string): boolean => {
   return true;
 };
 
+const debugLog = (message: string, meta?: Record<string, unknown>) => {
+  if (!DEBUG_API) return;
+  console.info(`[api/upload] ${message}`, meta ?? {});
+};
+
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
+  debugLog("request_received", { ip });
+
   if (!checkRateLimit(ip)) {
     return NextResponse.json(
       { error: "Too many uploads. Please try again later." },
@@ -47,11 +58,24 @@ export async function POST(request: NextRequest) {
   }
 
   const formData = await request.formData();
-  const file = formData.get("file");
+  const documentFile = formData.get("document");
+  const thumbnailFile = formData.get("thumbnail");
 
-  if (!file || !(file instanceof File)) {
-    return NextResponse.json({ error: "No file provided." }, { status: 400 });
+  const hasDocument = documentFile instanceof File;
+  const hasThumbnail = thumbnailFile instanceof File;
+
+  if (hasDocument === hasThumbnail) {
+    return NextResponse.json(
+      {
+        error:
+          "Provide exactly one file field: either `document` or `thumbnail`.",
+      },
+      { status: 400 }
+    );
   }
+
+  const fieldType = hasDocument ? "document" : "thumbnail";
+  const file = (hasDocument ? documentFile : thumbnailFile) as File;
 
   if (file.size > MAX_UPLOAD_BYTES) {
     return NextResponse.json(
@@ -60,11 +84,30 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!ALLOWED_MIME_TYPES.has(file.type)) {
-    return NextResponse.json({ error: "Unsupported file type." }, { status: 400 });
+  const allowedTypes =
+    fieldType === "document" ? DOCUMENT_MIME_TYPES : THUMBNAIL_MIME_TYPES;
+
+  if (!allowedTypes.has(file.type)) {
+    return NextResponse.json(
+      {
+        error:
+          fieldType === "document"
+            ? "Unsupported document type. Use PDF, DOC, or DOCX."
+            : "Unsupported thumbnail type. Use PNG, JPG, or JPEG.",
+      },
+      { status: 400 }
+    );
   }
 
   const safeName = sanitizeFileName(file.name);
+  debugLog("file_validated", {
+    fieldType,
+    originalName: file.name,
+    safeName,
+    size: file.size,
+    type: file.type,
+  });
+
   const safeFile = new File([file], safeName, {
     type: file.type,
     lastModified: file.lastModified,
@@ -72,9 +115,17 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await uploadFileOnServer(safeFile);
-    return NextResponse.json(result);
+    debugLog("upload_success", {
+      fieldType,
+      rootHash: result.rootHash,
+      txHash: result.txHash,
+      size: result.size,
+      type: result.type,
+    });
+    return NextResponse.json({ ...result, fieldType });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Upload failed.";
+    debugLog("upload_failed", { message });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
