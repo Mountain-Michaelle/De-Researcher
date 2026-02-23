@@ -1,5 +1,5 @@
 import React from 'react'
-
+import Image from 'next/image' 
 function Hero2() {
   return (
     <div className="text-gray-50 w-full mb-10 flex md:flex-row justify-center ">
@@ -25,8 +25,8 @@ function Hero2() {
                    See how it works 
                 </span>
 
-                <span className='ml-5'>
-                    <img src='/svg/forwardarrow.svg' alt="" />
+                <span className='ml-5 relative'>
+                    <Image fill src='/svg/forwardarrow.svg' alt="" />
                 </span>
             </button>    
         </div>

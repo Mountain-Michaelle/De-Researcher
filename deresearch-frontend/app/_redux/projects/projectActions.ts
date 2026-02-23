@@ -3,7 +3,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { Contract } from "ethers";
 import { connectWallet } from "@/app/_lib/utils/wallet";
-import { serializeBigNumbers } from "@/app/_lib/utils/serializeBigNumbers";
+import {
+  serializeBigNumbers,
+  type SerializableValue,
+} from "@/app/_lib/utils/serializeBigNumbers";
 
 
 export interface Project {
@@ -48,7 +51,7 @@ export const fetchMyProjects = createAsyncThunk<
     if (!Array.isArray(proj) || proj.length === 0) return [];
 
     const formattedData: Project[] = (proj as unknown[]).map((entry) => {
-      const safeEntry = serializeBigNumbers(entry);
+      const safeEntry = serializeBigNumbers(entry as SerializableValue) as unknown[];
 
       return {
         title: String(safeEntry[0]),
@@ -88,7 +91,7 @@ export const fetchAllProjects = createAsyncThunk<
     if (!proj || !Array.isArray((proj as unknown[])[0])) return [];
 
     const cleanData: Project[] = ((proj as unknown[])[0] as unknown[]).map((item) => {
-      const safeItem = serializeBigNumbers(item);
+      const safeItem = serializeBigNumbers(item as SerializableValue) as unknown[];
 
       return {
         title: String(safeItem[0]),
@@ -140,7 +143,8 @@ export const createProject = createAsyncThunk<
     if (!projectId) {
       const count = await contractInstance.projectCount();
       const numeric = typeof count === "bigint" ? count : BigInt(count);
-      projectId = numeric > 0n ? (numeric - 1n).toString() : "0";
+      projectId =
+        numeric > BigInt(0) ? (numeric - BigInt(1)).toString() : "0";
     }
 
     // Refresh after creation

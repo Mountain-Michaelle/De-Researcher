@@ -3,8 +3,7 @@ import React from "react";
 import { AlertCreateProject } from "../../_components/modals/createProject";
 import WalletConnector from "../walletConnector";
 import { useSelector } from "react-redux";
-import type { RootState } from "../../_redux/store"; // ✅ adjust import path to your store
-
+import type { RootState } from "../../_redux/store"; 
 const ConnectWalletHero: React.FC = () => {
   const { isConnected } = useSelector((state: RootState) => state.wallet);
 
@@ -18,7 +17,7 @@ const ConnectWalletHero: React.FC = () => {
 
         <p className="text-md lg:text-lg text-center ml-0 mb-0 lg:text-left mt-4">
           Access over 160 million publication pages and stay up to date with
-          what's happening in your field.
+          what&apos;s happening in your field.
         </p>
 
         <div>

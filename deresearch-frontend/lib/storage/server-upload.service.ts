@@ -48,11 +48,6 @@ export const uploadFileOnServer = async (file: File): Promise<UploadResult> => {
   const indexerRpc = process.env.OG_INDEXER_RPC || "";
   const rpcUrl = process.env.OG_RPC_URL || "";
   const privateKey = process.env.OG_PRIVATE_KEY || "";
-  const flowNodes = (process.env.OG_FLOW_NODES || "")
-    .split(",")
-    .map((node) => node.trim())
-    .filter(Boolean);
-
   if (!indexerRpc || !rpcUrl || !privateKey) {
     throw new Error(
       "Missing 0G config. Set OG_INDEXER_RPC, OG_RPC_URL, and OG_PRIVATE_KEY."
@@ -76,14 +71,7 @@ export const uploadFileOnServer = async (file: File): Promise<UploadResult> => {
       }
       rootHash = toHexString(tree?.rootHash());
 
-      // If OG_FLOW_NODES is not provided, use SDK default node discovery.
-      const [selectedNode, selectErr] =
-        flowNodes.length > 0 ? await indexer.select(flowNodes) : await indexer.select();
-      if (selectErr !== null || !selectedNode) {
-        throw new Error(`Failed selecting a 0G storage node: ${selectErr}`);
-      }
-
-      const [tx, uploadErr] = await indexer.upload(selectedNode, zgFile, rpcUrl, signer);
+      const [tx, uploadErr] = await indexer.upload(zgFile, rpcUrl, signer);
       if (uploadErr !== null) {
         throw new Error(`0G upload failed: ${uploadErr}`);
       }

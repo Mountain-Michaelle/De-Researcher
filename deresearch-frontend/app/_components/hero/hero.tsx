@@ -1,7 +1,5 @@
 import React from "react";
 import Hero2 from "./hero2";
-import type { RootState, AppDispatch } from '../../_redux/store';
-import {useDispatch, useSelector} from 'react-redux';
 import { tokenData } from "../../_data/tokenData";
 import GetStarted from "./getStarted";
 
