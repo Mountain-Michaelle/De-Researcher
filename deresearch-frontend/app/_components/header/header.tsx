@@ -43,9 +43,9 @@ const Header: React.FC = () => {
   return (
     <>
       <header
-        className={`w-full z-40 transition-all ${
+        className={`w-full z-10 transition-all ${
           sticky
-            ? `fixed top-0 left-0 bg-black/50 backdrop-blur-sm shadow-lg z-[9999]`
+            ? `fixed top-0 left-0 bg-black/50 backdrop-blur-sm shadow-lg z-[29]`
             : 'relative bg-transparent'
         }`}
       >
@@ -88,11 +88,7 @@ const Header: React.FC = () => {
           className="fixed inset-0 z-[10000] flex justify-center items-center bg-black/60 backdrop-blur-sm px-4"
         >
           <AlertUp
-            text={
-              error?.toLowerCase().includes('wallet_requestpermissions')
-                ? 'Request already pending for this origin'
-                : error
-            }
+            text={error}
             variant="destructive"
             description={handleBlockchainError(error)}
           />

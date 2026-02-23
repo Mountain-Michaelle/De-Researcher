@@ -1,6 +1,7 @@
 "use client";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import { createProject, fetchMyProjects, fetchAllProjects } from "./projectActions";
+import type { SerializedError } from "@reduxjs/toolkit";
 
 // 🧩 1. Define your project type
 export interface Project {
@@ -17,12 +18,14 @@ export interface Project {
   contributors?: string;
 }
 
+// 🧩 2. Define your state type
 export interface ProjectState {
   myProjects: Project[];
   allProjects: Project[];
   loading: boolean;
   success: boolean;
   error: string | null;
+  lastCreatedProjectId: string | null;
 }
 
 const initialState: ProjectState = {
@@ -31,8 +34,10 @@ const initialState: ProjectState = {
   loading: false,
   success: false,
   error: null,
+  lastCreatedProjectId: null,
 };
 
+// 🧩 3. Create the slice
 const projectSlice = createSlice({
   name: "projects",
   initialState,
@@ -43,50 +48,53 @@ const projectSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder 
+    builder
+      // Fetch My Projects
       .addCase(fetchMyProjects.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchMyProjects.fulfilled, (state, action: PayloadAction<Project[]>) => {
+      .addCase(fetchMyProjects.fulfilled, (state, action) => {
         state.loading = false;
         state.myProjects = action.payload;
         state.error = null;
       })
-      .addCase(fetchMyProjects.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(fetchMyProjects.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Failed to fetch your projects.";
+        state.error = (action.payload as SerializedError)?.message ?? "Failed to fetch your projects.";
       })
 
-      //Fetch All Projects
+      // Fetch All Projects
       .addCase(fetchAllProjects.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchAllProjects.fulfilled, (state, action: PayloadAction<Project[]>) => {
+      .addCase(fetchAllProjects.fulfilled, (state, action) => {
         state.loading = false;
         state.allProjects = action.payload;
         state.error = null;
       })
-      .addCase(fetchAllProjects.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(fetchAllProjects.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload ?? "Failed to fetch all projects.";
+        state.error = (action.payload as SerializedError)?.message ?? "Failed to fetch all projects.";
       })
 
-      //Create Project
+      // Create Project
       .addCase(createProject.pending, (state) => {
         state.loading = true;
         state.success = false;
+        state.lastCreatedProjectId = null;
       })
-      .addCase(createProject.fulfilled, (state) => {
+      .addCase(createProject.fulfilled, (state, action) => {
         state.loading = false;
         state.success = true;
         state.error = null;
+        state.lastCreatedProjectId = String(action.payload ?? "");
       })
-      .addCase(createProject.rejected, (state, action: PayloadAction<any>) => {
+      .addCase(createProject.rejected, (state, action) => {
         state.loading = false;
         state.success = false;
-        state.error = action.payload ?? "Failed to create project.";
+        state.error = (action.payload as SerializedError)?.message ?? "Failed to create project.";
       });
   },
 });

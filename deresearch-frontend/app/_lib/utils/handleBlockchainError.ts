@@ -1,36 +1,47 @@
-export const handleBlockchainError = (err: any): string => {
+export interface BlockchainError extends Error {
+  code?: number | string;
+  data?: {
+    cause?: {
+      isBrokenCircuitError?: boolean;
+    };
+  };
+  message: string;
+}
+
+export const handleBlockchainError = (err: unknown): string => {
   let message = "An unexpected blockchain error occurred. Please try again.";
 
-  const errorMessage = err?.message?.toLowerCase?.() || "";
+  const error = err as BlockchainError;
+  const errorMessage = error?.message?.toLowerCase?.() || "";
 
   // --- Wallet / MetaMask errors ---
   if (typeof window !== "undefined" && !window?.ethereum) {
     message = "No Ethereum wallet detected. Please install MetaMask or connect a wallet.";
-  } else if (err?.code === 4001) {
+  } else if (error?.code === 4001) {
     message = "You rejected the transaction request.";
-  } else if (err?.code === 4100) {
+  } else if (error?.code === 4100) {
     message = "Your wallet is not authorized for this action.";
-  } else if (err?.code === 4200) {
+  } else if (error?.code === 4200) {
     message = "Your wallet does not support this request.";
-  } else if (err?.code === 4900) {
+  } else if (error?.code === 4900) {
     message = "Your wallet is currently disconnected.";
-  } else if (err?.code === 4901) {
+  } else if (error?.code === 4901) {
     message = "Please switch to the correct blockchain network.";
-  } else if (err?.code === 4902) {
+  } else if (error?.code === 4902) {
     message = "The requested network is not added to your wallet.";
 
   // --- RPC / Node / Provider errors ---
-  } else if (err?.data?.cause?.isBrokenCircuitError) {
+  } else if (error?.data?.cause?.isBrokenCircuitError) {
     message = "The blockchain network is overloaded. Please wait and try again.";
-  } else if (err?.code === -32603) {
+  } else if (error?.code === -32603) {
     message = "Internal RPC error. Try again in a few seconds.";
-  } else if (err?.code === -32602) {
+  } else if (error?.code === -32602) {
     message = "Invalid parameters sent to the blockchain.";
-  } else if (err?.code === -32601) {
+  } else if (error?.code === -32601) {
     message = "This blockchain method is not supported.";
-  } else if (err?.code === -32000) {
+  } else if (error?.code === -32000) {
     message = "Invalid input provided to the provider.";
-  } else if (err?.code === -32002) {
+  } else if (error?.code === -32002) {
     message = "RPC node temporarily unavailable. Please retry.";
 
   // --- Execution / Transaction errors ---
@@ -71,4 +82,4 @@ export const handleBlockchainError = (err: any): string => {
   }
 
   return message;
-}
+};

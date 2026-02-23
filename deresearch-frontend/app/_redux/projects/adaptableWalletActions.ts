@@ -1,8 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { ethers } from "ethers";
+import { BrowserProvider, JsonRpcSigner } from "ethers";
 import { shortenAddress } from "../../_lib/addresShortener";
 import { initProvider } from "../../_lib/utils/wallet";
 import EthereumProvider from "@walletconnect/ethereum-provider";
+import type { MetaMaskInpageProvider } from '@metamask/providers';
+
+
+// -------------------- INTERFACES --------------------
 
 export interface WalletInfo {
   address: string;
@@ -17,45 +21,67 @@ export interface SerializedError {
   code?: string | null;
 }
 
+  
+// Custom window interface for type-safe external providers
+declare global {
+  interface Window {
+    ethereum?: MetaMaskInpageProvider;
+    walletConnectProvider?: EthereumProvider;
+  }
+}
+
 const serializeError = (error: unknown): SerializedError => {
-  const e = error as any;
+  if (error instanceof Error) {
+    // Native Error object
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      code: (error as { code?: string }).code ?? null,
+    };
+  }
+  // Unknown object fallback
+  const e = error as Record<string, unknown>;
   return {
-    name: e?.name || "Error",
-    message: e?.message || "Unknown error",
-    stack: e?.stack,
-    code: e?.code || null,
+    name: typeof e.name === "string" ? e.name : "Error",
+    message: typeof e.message === "string" ? e.message : "Unknown error",
+    stack: typeof e.stack === "string" ? e.stack : undefined,
+    code: typeof e.code === "string" ? e.code : null,
   };
 };
 
-// 🪙 Connect wallet (Desktop MetaMask + Mobile via WalletConnect)
+// -------------------- CONNECT WALLET --------------------
+
 export const connectWallet = createAsyncThunk<
   WalletInfo,
   void,
   { rejectValue: string | SerializedError }
 >("wallet/connectWallet", async (_, thunkAPI) => {
   try {
-    let provider: ethers.BrowserProvider | null = null;
+    let provider: BrowserProvider | null = null;
     let accounts: string[] = [];
 
-    // Check for MetaMask (Desktop)
-    if (typeof window !== "undefined" && (window as any).ethereum) {
+    // 🖥️ Desktop MetaMask
+    if (typeof window !== "undefined" && window.ethereum) {
       provider = initProvider();
       if (!provider) throw new Error("Provider initialization failed");
+
       accounts = await provider.send("eth_requestAccounts", []);
     } else {
-      // Fallback to WalletConnect (Mobile)
+      // 📱 Mobile WalletConnect fallback
       const wcProvider = await EthereumProvider.init({
-        projectId: "YOUR_WALLETCONNECT_PROJECT_ID", // 🔑 get from cloud.walletconnect.com
+        projectId: "YOUR_WALLETCONNECT_PROJECT_ID", // from cloud.walletconnect.com
         showQrModal: true,
-        chains: [1], // Ethereum Mainnet (adjust for testnets)
+        chains: [1], // Ethereum Mainnet (adjust for Goerli, Sepolia, etc.)
       });
 
       await wcProvider.enable();
+      window.walletConnectProvider = wcProvider;
 
-      provider = new ethers.BrowserProvider(wcProvider as any);
+      provider = new BrowserProvider(wcProvider as unknown as EthereumProvider);
 
-    const signers = await provider?.listAccounts();
-    accounts = await Promise.all(signers?.map((s) => s.getAddress()));
+      const signers: JsonRpcSigner[] = await provider.listAccounts();
+      accounts = await Promise.all(signers.map((s) => s.getAddress()));
     }
 
     if (!accounts || accounts.length === 0) {
@@ -73,23 +99,24 @@ export const connectWallet = createAsyncThunk<
   }
 });
 
-// 🔄 Check wallet connection
+// -------------------- CHECK WALLET CONNECTION --------------------
+
 export const checkWalletConnection = createAsyncThunk<
   WalletInfo,
   void,
   { rejectValue: string | SerializedError }
 >("wallet/checkWalletConnection", async (_, thunkAPI) => {
   try {
-    let provider: ethers.BrowserProvider | null = null;
-
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      provider = initProvider();
-    } else {
-      // No MetaMask injected provider
+    if (typeof window === "undefined" || !window.ethereum) {
       return thunkAPI.rejectWithValue("Wallet not connected");
     }
 
-    const accounts: string[] = await provider?.send("eth_requestAccounts", []);
+    const provider = initProvider();
+    if (!provider) {
+      return thunkAPI.rejectWithValue("Provider not initialized");
+    }
+
+    const accounts: string[] = await provider.send("eth_requestAccounts", []);
     if (!accounts || accounts.length === 0) {
       return thunkAPI.rejectWithValue("No connected account");
     }
@@ -105,17 +132,17 @@ export const checkWalletConnection = createAsyncThunk<
   }
 });
 
-// 🔌 Disconnect wallet
+// -------------------- DISCONNECT WALLET --------------------
+
 export const disconnectWallet = createAsyncThunk<null, void>(
   "wallet/disconnectWallet",
   async () => {
     try {
-      // Optional: Add WalletConnect disconnect logic
-      if ((window as any).walletConnectProvider) {
-        await (window as any).walletConnectProvider.disconnect();
+      if (window.walletConnectProvider) {
+        await window.walletConnectProvider.disconnect();
       }
-    } catch (e) {
-      console.error("Disconnect error:", e);
+    } catch (error) {
+      console.error("Disconnect error:", error);
     }
     return null;
   }

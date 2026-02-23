@@ -3,9 +3,9 @@ import { BrowserRouter, Route, useLocation } from 'react-router'
 import Header from './components/context/Header/Header'
 import { ThemeProvider } from './context/Provider'
 import Footer from './components/context/Footer/Footer'
-import { Toaster } from './components/ui/toaster'
+import { Toaster } from './components/ui/toaster';
 import {Provider} from "react-redux";
-import store from './redux/store';
+import {store} from './redux/store';
 import { Toast } from 'bootstrap'
 
 const Layout = ({children}) => {

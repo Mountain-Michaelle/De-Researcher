@@ -1,30 +1,33 @@
-import React from "react";
+import * as React from "react";
 import { AlertCircleIcon } from "lucide-react";
+import { VariantProps } from "class-variance-authority";
+
 import {
   Alert,
   AlertDescription,
   AlertTitle,
+  alertVariants, 
 } from "@/components/ui/alert";
 
-//
+type AlertVariant = VariantProps<typeof alertVariants>["variant"];
+
 interface AlertUpProps {
   text: string;
   description?: string;
-  variant?: string; // Customize based on your `Alert` component variants
+  variant?: AlertVariant;
+  className?: string;
 }
 
-//
-// 💡 Functional Component
-//
-export const AlertUp: React.FC<AlertUpProps> = ({
+export function AlertUp({
   text,
   description,
-  variant
-}) => {
+  variant = "default",
+  className,
+}: AlertUpProps) {
   return (
     <div className="grid w-full max-w-xl items-start p-5 gap-4">
-      <Alert variant={variant} className="bg-white">
-        <AlertCircleIcon className="text-red-500" />
+      <Alert variant={variant} className={className}>
+        <AlertCircleIcon className="h-4 w-4 text-red-500" />
         <AlertTitle>{text}</AlertTitle>
         {description && (
           <AlertDescription>{description}</AlertDescription>
@@ -32,4 +35,4 @@ export const AlertUp: React.FC<AlertUpProps> = ({
       </Alert>
     </div>
   );
-};
+}

@@ -1,5 +1,5 @@
 // src/redux/wallet/walletSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import {
   connectWallet,
   checkWalletConnection,

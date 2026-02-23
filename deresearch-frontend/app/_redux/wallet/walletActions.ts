@@ -1,7 +1,7 @@
 import { shortenAddress } from "../../_lib/addresShortener";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { initProvider } from "../../_lib/utils/wallet";
-import { ethers } from "ethers";
+import { BrowserProvider } from "ethers"; 
 
 export interface WalletInfo {
   address: string;
@@ -16,18 +16,21 @@ export interface SerializedError {
   code?: string | null;
 }
 
-const serializeError = (error: any): SerializedError => ({
-  name: error?.name || "Error",
-  message: error?.message || "Unknown error",
-  stack: error?.stack,
-  code: error?.code || null,
-});
+const serializeError = (error: unknown): SerializedError => {
+  const err = error as Record<string, unknown>;
+  return {
+    name: (err?.name as string) || "Error",
+    message: (err?.message as string) || "Unknown error",
+    stack: err?.stack as string | undefined,
+    code: (err?.code as string) || null,
+  };
+};
 
-// 🪙 4. Connect wallet
+// Connect wallet
 export const connectWallet = createAsyncThunk<
   WalletInfo,
   void,
-  { rejectValue: string | SerializedError }
+  { rejectValue: SerializedError | string }
 >(
   "wallet/connectWallet",
   async (_, thunkAPI) => {
@@ -36,10 +39,8 @@ export const connectWallet = createAsyncThunk<
     }
 
     try {
-      const provider = initProvider();
-      if (!provider) throw new Error("Provider initialization failed");
-
-      const accounts: string[] = await provider.send("eth_requestAccounts", []);
+      const provider = new BrowserProvider(window.ethereum); 
+      const accounts = await provider.send("eth_requestAccounts", []);
       if (accounts.length === 0) {
         return thunkAPI.rejectWithValue("No account found");
       }
@@ -50,7 +51,8 @@ export const connectWallet = createAsyncThunk<
         shortAddress: shortenAddress(address),
         isConnected: true,
       };
-    } catch (error: any) {
+    } catch (error) {
+      console.log("Errors ", error)
       return thunkAPI.rejectWithValue(serializeError(error));
     }
   }
@@ -60,7 +62,7 @@ export const connectWallet = createAsyncThunk<
 export const checkWalletConnection = createAsyncThunk<
   WalletInfo,
   void,
-  { rejectValue: string | SerializedError }
+  { rejectValue: SerializedError | string }
 >(
   "wallet/checkWalletConnection",
   async (_, thunkAPI) => {
@@ -69,27 +71,25 @@ export const checkWalletConnection = createAsyncThunk<
     }
 
     try {
-      const provider = initProvider();
-      if (!provider) throw new Error("Provider initialization failed");
-
-      const signers = await provider.listAccounts();
-      if (signers.length === 0) {
+      const provider = new BrowserProvider(window.ethereum);
+      const accounts = await provider.listAccounts();
+      if (accounts.length === 0) {
         return thunkAPI.rejectWithValue("No connected account");
       }
 
-      const address = await signers[0].getAddress();
+      const address = accounts[0].address; 
       return {
         address,
         shortAddress: shortenAddress(address),
         isConnected: true,
       };
-    } catch (error: any) {
+    } catch (error) {
       return thunkAPI.rejectWithValue(serializeError(error));
     }
   }
 );
 
-// 🔌 6. Disconnect wallet (just clears Redux state)
+// Disconnect wallet (clear Redux state)
 export const disconnectWallet = createAsyncThunk<null, void>(
   "wallet/disconnectWallet",
   async () => null

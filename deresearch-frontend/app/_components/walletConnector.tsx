@@ -4,7 +4,6 @@ import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
 import type { RootState, AppDispatch } from "../_redux/store";
 import { connectWallet, checkWalletConnection } from "../_redux/wallet/walletActions";
 import { Alert } from "./modals/popUp";
-import { useWalletConnect } from "../walletUtils/hooks/useConnect";
 
 
 interface WalletConnectorProps {
@@ -14,15 +13,13 @@ interface WalletConnectorProps {
 }
 
 //
-// 🧠 Component
-//
 const WalletConnector: React.FC<WalletConnectorProps> = ({
   title,
   bgStyle,
   textColor,
 }) => {
 
-  const [isVisible, setIsVisible] = useState<Boolean>(true)
+  const [isVisible, setIsVisible] = useState<boolean>(true)
   
    const handleCancel = () => {
     setIsVisible(false)

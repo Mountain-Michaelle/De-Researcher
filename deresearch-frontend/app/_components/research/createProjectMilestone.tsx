@@ -35,6 +35,14 @@ interface CreateProjectMileStoneProps {
   text: string;
 }
 
+interface Milestone {
+  title: string;
+  description: string;
+  deadline: number;
+  reward: string;
+}
+
+
 export function CreateProjectMileStone({
   bg,
   onMilestoneAdded,
@@ -42,7 +50,7 @@ export function CreateProjectMileStone({
   text,
 }: CreateProjectMileStoneProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [milestones, setMilestones] = useState<any[]>([]);
+  const [_, setMilestones] = useState<Milestone[]>([]);
 
   // ✅ Toast Helper
   const handleShowToast = (title: string, description: string, type: "success" | "error") => {
@@ -71,14 +79,15 @@ export function CreateProjectMileStone({
         signer
       );
       const fetchedMilestones = await projectContract.getAllMilestones();
-      setMilestones(
-        fetchedMilestones.map((m: any) => ({
-          title: m.title,
-          description: m.description,
-          deadline: Number(m.deadline),
-          reward: ethers.formatEther(m.reward),
-        }))
-      );
+      const formatted: Milestone[] = fetchedMilestones.map(
+      (m: [string, string, bigint, bigint]) => ({
+        title: m[0],
+        description: m[1],
+        deadline: Number(m[2]),
+        reward: ethers.formatEther(m[3]),
+      })
+    );
+      setMilestones(formatted)
       console.log("Milestones: ", fetchedMilestones);
     } catch (error) {
       console.error("Error fetching milestones:", error);
@@ -90,8 +99,6 @@ export function CreateProjectMileStone({
     getMilestones();
   }, [contractId]);
 
-  const milestoneListRef = useRef<HTMLDivElement | null>(null);
-  const router = useRouter();
   // ✅ Formik Setup
   const formik = useFormik({
     initialValues: {
@@ -183,7 +190,7 @@ export function CreateProjectMileStone({
         <Button
           onClick={() => setOpen(true)}
           style={{ background: bg }}
-          className="lg:mt-20 px-7 py-3 w-fit rounded-full my-5"
+          className="lg:mt-20 px-7 py-3 w-fit bg-blue-500 rounded-full my-5"
         >
           {text}
         </Button>
@@ -245,7 +252,7 @@ export function CreateProjectMileStone({
                 <div className="flex gap-2">
                   <div>
                     <Label className="block text-left text-white mb-2 text-sm font-medium">
-                      Reward (ETH)
+                      Reward (WEI)
                     </Label>
                     <Input
                       id="reward"
@@ -299,9 +306,12 @@ export function CreateProjectMileStone({
                 </div>
 
                 {/* Submit */}
-                <Button type="submit" disabled={isLoading}>
+                <div className='w-full flex justify-center items-center mt-3'>
+                    <Button type="submit" className=' mt-3 m-auto' disabled={isLoading}>
                   {isLoading ? "Creating..." : "Add Milestone"}
                 </Button>
+                </div>
+              
               </CardContent>
             </Card>
           </form>

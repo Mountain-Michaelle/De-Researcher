@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef} from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { shortenAddress } from "../../../../_lib/addresShortener";
 import { Button } from "@/components/ui/button";
 import { CreateProjectMileStone } from "../../../../_components/research/createProjectMilestone";
 import { useParams } from "next/navigation";
-import { ethers } from "ethers";
+import { ethers, Contract } from "ethers";
 import { connectWallet } from "../../../../_lib/utils/wallet";
 import ResearchProjectABI from "../../../../truffle_abis/ResearchProject.json";
 import { BigNumber } from "@ethersproject/bignumber";
-import {ChevronsLeft} from 'lucide-react';
-import { formatEth } from "@/app/_lib/utils/weiConverter";
+import { ChevronsLeft } from "lucide-react";
+import { ProjectFiles } from "@/components/project/ProjectFiles";
 
 // --------------------
 // 🔹 Type Definitions
@@ -40,9 +40,17 @@ interface ProjectDetails {
   milestone?: string;
 }
 
-// --------------------
-// 🔹 Main Component
-// --------------------
+interface RawMilestone extends Array<unknown> {
+  0: string; // title
+  1: string; // description
+  2: bigint | string; // amount
+  3: bigint | string; // deadline
+  4: boolean; // isCompleted
+  5: string; // recipient
+  6: bigint | string; // progress
+  7: string; // hash
+}
+
 
 const ResearchDetails: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -52,67 +60,67 @@ const ResearchDetails: React.FC = () => {
 
   const params = useParams();
   const id = params?.id as string | undefined;
+  const milestoneListRef = useRef<HTMLDivElement | null>(null);
 
-  // --------------------
-  // 🧩 Fetch milestones
-  // --------------------
   const getMilestones = useCallback(async (projectId: string) => {
     try {
       const { contractInstance, signer } = await connectWallet();
       const projectAddress: string = await contractInstance.getProjectAddress(projectId);
-      const projectContract = new ethers.Contract(projectAddress, ResearchProjectABI.abi, signer);
+      const projectContract = new Contract(projectAddress, ResearchProjectABI.abi, signer);
 
-      const rawMilestones = await projectContract.getAllMilestones();
-      const formattedMilestones: Milestone[] = rawMilestones.map((m: any, idx: number) => ({
+      const rawMilestones: RawMilestone[] = await projectContract.getAllMilestones();
+
+      const formattedMilestones: Milestone[] = rawMilestones.map((m, idx) => ({
         id: idx,
-        title: m[0],
-        description: m[1],
+        title: String(m[0]),
+        description: String(m[1]),
         amount: ethers.formatEther(BigNumber.from(m[2]).toString()),
         deadline: BigNumber.from(m[3]).toString(),
-        isCompleted: m[4],
-        recipient: m[5],
+        isCompleted: Boolean(m[4]),
+        recipient: String(m[5]),
         progress: BigNumber.from(m[6]).toString(),
-        hash: m[7],
+        hash: String(m[7]),
       }));
 
       setMilestones(formattedMilestones);
-    } catch (error: any) {
-      console.error("Error fetching milestones:", error);
-      setErrorMessage(error.message || "Error fetching milestones");
+    } catch (error) {
+      const err = error as Error;
+      console.error("Error fetching milestones:", err);
+      setErrorMessage(err.message || "Error fetching milestones");
     }
   }, []);
 
-function capitalizeFirst(str:string) {
-  if (!str) return "";
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+  const capitalizeFirst = (str: string): string =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 
   const getProjectDetail = useCallback(async (projectId: string) => {
     try {
       setIsLoading(true);
       const { contractInstance } = await connectWallet();
       const resp = await contractInstance.getProjectDetails(projectId);
-
+      console.log("projectDetails", resp)
       const raw = Array.isArray(resp) ? resp[0] : [];
-      if (raw && raw.length > 0) {
+
+      if (Array.isArray(raw) && raw.length > 0) {
         const formatted: ProjectDetails = {
-          title: raw[0],
-          description: raw[1],
-          recipient: raw[3],
-          transactionHash: raw[4],
-          creator: raw[5],
-          extras: raw[7],
+          title: String(raw[0]),
+          stake:String([raw[2]]),
+          description: String(raw[1]),
+          recipient: String(raw[3]),
+          transactionHash: String(raw[4]),
+          creator: String(raw[5]),
+          extras: String(raw[7] ?? ""),
         };
         setProjectDetails(formatted);
       }
-    } catch (error: any) {
-      setErrorMessage(error.message || "Error fetching project details");
+    } catch (error) {
+      const err = error as Error;
+      setErrorMessage(err.message || "Error fetching project details");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
- 
   useEffect(() => {
     if (id) {
       getProjectDetail(id);
@@ -120,7 +128,7 @@ function capitalizeFirst(str:string) {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [id, getProjectDetail, getMilestones]);
-  const milestoneListRef = useRef<HTMLDivElement | null>(null);
+
 
   return (
     <div className="min-h-screen w-full bg-gray-900 text-white relative">
@@ -151,7 +159,7 @@ function capitalizeFirst(str:string) {
 
             <div className="grid grid-cols-2 gap-4 mt-6">
               <div>
-               <p className="text-gray-400">Total Tokens Committed</p>
+                <p className="text-gray-400">Total Tokens Committed</p>
                 <p className="text-xl font-semibold">{projectDetails.stake || "0"} Wei</p>
               </div>
               <div>
@@ -167,6 +175,8 @@ function capitalizeFirst(str:string) {
               </p>
             </div>
 
+            {id && <ProjectFiles projectId={id} />}
+
             <div className="mt-6">
               <p className="text-gray-400">Transaction Hash</p>
               <p className="text-sm break-all bg-gray-700 p-2 rounded">
@@ -179,8 +189,7 @@ function capitalizeFirst(str:string) {
               <p className="text-sm break-all bg-gray-700 p-2 rounded">
                 {shortenAddress(projectDetails.recipient, 10)}
               </p>
-            <div ref={milestoneListRef} className="m-0 p-0" id="milestone-list"></div>
-
+              <div ref={milestoneListRef} className="m-0 p-0" id="milestone-list" />
             </div>
 
             <Button
@@ -193,13 +202,15 @@ function capitalizeFirst(str:string) {
 
             {/* Milestones Section */}
             <div className="mt-16">
-               <div ref={milestoneListRef} id="milestone-list"></div>
+              <div ref={milestoneListRef} id="milestone-list" />
               <h2 className="text-3xl md:text-4xl font-semibold text-blue-400 mb-4">MILESTONES</h2>
               {milestones.length > 0 ? (
                 <div className="space-y-4 flex flex-wrap gap-5">
                   {[...milestones].reverse().map((m) => (
                     <div key={m.id} className="bg-gray-700 max-w-[80%] relative p-4 rounded-lg">
-                      <h3 className="text-blue-200 font-bold mt-3 text-xl">{capitalizeFirst(m.title.toLowerCase())}</h3>
+                      <h3 className="text-blue-200 font-bold mt-3 text-xl">
+                        {capitalizeFirst(m.title.toLowerCase())}
+                      </h3>
                       <p className="text-gray-300 ml-2">{m.description}</p>
                       <p className="text-sm ml-2">Amount: {m.amount} ETH</p>
                       <p

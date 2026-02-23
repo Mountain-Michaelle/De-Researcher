@@ -1,8 +1,21 @@
-// utils/serializeBigNumbers.ts
 import { BigNumber } from "@ethersproject/bignumber";
 
+export type SerializableValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | bigint
+  | BigNumber
+  | SerializableObject
+  | SerializableValue[];
 
-export const serializeBigNumbers = (value: any): any => {
+export interface SerializableObject {
+  [key: string]: SerializableValue;
+}
+
+export const serializeBigNumbers = <T extends SerializableValue>(value: T): unknown => {
   if (value == null) return value;
 
   // Handle BigInt
@@ -12,12 +25,17 @@ export const serializeBigNumbers = (value: any): any => {
   if (BigNumber.isBigNumber(value)) return value.toString();
 
   // Handle arrays
-  if (Array.isArray(value)) return value.map(serializeBigNumbers);
+  if (Array.isArray(value)) {
+    return value.map((v) => serializeBigNumbers(v));
+  }
 
   // Handle objects
   if (typeof value === "object") {
     return Object.fromEntries(
-      Object.entries(value).map(([key, val]) => [key, serializeBigNumbers(val)])
+      Object.entries(value as Record<string, SerializableValue>).map(([key, val]) => [
+        key,
+        serializeBigNumbers(val),
+      ])
     );
   }
 

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import {store} from './_redux/store'
 import { ReduxProvider } from "./_context/reduxProvider";
 import Header from "@/app/_components/header/header";
 

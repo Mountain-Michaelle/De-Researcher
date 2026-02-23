@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -22,9 +21,10 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 import type { RootState, AppDispatch } from "../../_redux/store";
+import { useProjectUpload } from "@/hooks/useProjectUpload";
 
 //
 // 🔹 Props definition
@@ -40,13 +40,17 @@ interface AlertCreateProjectProps {
 export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { loading, success, error } = useSelector((state: RootState) => state.projects);
-  const [open, setOpen] = useState(false)
+  const walletAddress = useSelector((state: RootState) => state.wallet.address);
+  const [open, setOpen] = useState(false);
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+  const [thumbnailFiles, setThumbnailFiles] = useState<File[]>([]);
+  const { upload, loading: uploadLoading, error: uploadError, progress } = useProjectUpload();
   //
   // ✅ Toast handling
   //
   const handleShowToast = (title: string, description: string, type: "success" | "error") => {
-    toast(title,{
-      description:description,
+    toast(title, {
+      description,
       duration: 5000,
       className:
         type === "success"
@@ -89,23 +93,55 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
         .positive("Stake must be greater than zero"),
     }),
     onSubmit: async (values, { resetForm }) => {
-      await dispatch(
-        createProject({
-          title: values.projectTitle,
-          description: values.description,
-          stake: values.stakeInput,
-        })
-      );
-      resetForm();
+      try {
+        const projectId = await dispatch(
+          createProject({
+            title: values.projectTitle,
+            description: values.description,
+            stake: values.stakeInput,
+          })
+        ).unwrap();
 
-      setOpen(false)
+        const uploadContext = {
+          projectId,
+          uploadedBy: walletAddress || "unknown",
+        };
 
-      setTimeout(() => {
-        document.getElementById("project-view")?.scrollIntoView({ behavior: "smooth" });
-        // router.push("#milestone-list");
-      }, 300);
+        for (const document of documentFiles) {
+          await upload(document, "document", uploadContext);
+        }
+
+        for (const thumbnail of thumbnailFiles) {
+          await upload(thumbnail, "thumbnail", uploadContext);
+        }
+
+        resetForm();
+        setDocumentFiles([]);
+        setThumbnailFiles([]);
+        setOpen(false);
+
+        setTimeout(() => {
+          document.getElementById("project-view")?.scrollIntoView({ behavior: "smooth" });
+        }, 300);
+      } catch (submitError) {
+        const message =
+          submitError instanceof Error
+            ? submitError.message
+            : "Project creation failed.";
+        handleShowToast("Error ❌", message, "error");
+      }
     },
   });
+
+  const handleDocumentChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files ? Array.from(event.target.files) : [];
+    setDocumentFiles(files);
+  };
+
+  const handleThumbnailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files ? Array.from(event.target.files) : [];
+    setThumbnailFiles(files);
+  };
 
   //
   // 🧱 Render
@@ -115,7 +151,7 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
       <AlertDialogTrigger asChild>
         <button
           style={bg}
-          className="bg-custom-gradient lg:mt-20 px-7 py-3 w-fit rounded-full my-5 text-white font-medium"
+          className="bg-custom-gradient z-99950 lg:mt-20 px-7 py-3 w-fit rounded-full my-5 text-white font-medium"
         >
           {text}
         </button>
@@ -178,7 +214,7 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
                 {/* Stake */}
                 <div className="mb-3">
                   <Label htmlFor="stake-input" className="block text-left text-white mb-2 text-sm font-medium">
-                    Stake/ETH
+                    Stake/WEI
                   </Label>
                   <Input
                     id="stake-input"
@@ -197,13 +233,64 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
                   )}
                 </div>
 
+                {/* Project Documents */}
+                <div className="mb-3">
+                  <Label htmlFor="project-documents" className="block text-left text-white mb-2 text-sm font-medium">
+                    Project Document(s)
+                  </Label>
+                  <Input
+                    id="project-documents"
+                    name="document"
+                    type="file"
+                    multiple
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleDocumentChange}
+                    className="p-2 text-gray-300"
+                    style={{ background: "#22305e", border: "1px solid #234080" }}
+                  />
+                  {documentFiles.length > 0 && (
+                    <p className="text-xs text-blue-200 mt-2">
+                      {documentFiles.length} document(s) ready to upload.
+                    </p>
+                  )}
+                </div>
+
+                {/* Project Thumbnail */}
+                <div className="mb-3">
+                  <Label htmlFor="project-thumbnail" className="block text-left text-white mb-2 text-sm font-medium">
+                    Thumbnail Image(s)
+                  </Label>
+                  <Input
+                    id="project-thumbnail"
+                    name="thumbnail"
+                    type="file"
+                    multiple
+                    accept=".png,.jpg,.jpeg"
+                    onChange={handleThumbnailChange}
+                    className="p-2 text-gray-300"
+                    style={{ background: "#22305e", border: "1px solid #234080" }}
+                  />
+                  {thumbnailFiles.length > 0 && (
+                    <p className="text-xs text-blue-200 mt-2">
+                      {thumbnailFiles.length} thumbnail(s) ready to upload.
+                    </p>
+                  )}
+                </div>
+
                 {/* Submit Button */}
-                {loading ? (
+                {(loading || uploadLoading) ? (
                   <Button disabled type="button">
-                    Creating...
+                    {uploadLoading ? `Uploading (${progress}%)...` : "Creating..."}
                   </Button>
                 ) : (
                   <Button type="submit">Submit a project</Button>
+                )}
+
+                {/* Upload Errors */}
+                {uploadError && (
+                  <p className="text-red-300 text-left text-xs mt-2">
+                    {uploadError}
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -211,7 +298,7 @@ export const AlertCreateProject: React.FC<AlertCreateProjectProps> = ({ bg, text
         </AlertDialogHeader>
 
         <AlertDialogFooter className="flex items-center gap-3 m-0">
-          <AlertDialogCancel onClick={()=>setOpen(false)}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => setOpen(false)}>Cancel</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
